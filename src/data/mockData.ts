@@ -25,8 +25,11 @@ export const trains: Train[] = [
     arrivalTime: '18:30',
     duration: '12h 30m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 45000, availableSeats: 24 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 18000, availableSeats: 56 },
+      { type: 'first-1',  label: 'First Class 1',  price: 85000,  availableSeats: 12 },
+      { type: 'first-2',  label: 'First Class 2',  price: 65000,  availableSeats: 18 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 45000,  availableSeats: 24 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 35000,  availableSeats: 30 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 18000,  availableSeats: 56 },
     ],
     stops: [
       { stationId: 'ygn', arrivalTime: null, departureTime: '06:00' },
@@ -48,8 +51,12 @@ export const trains: Train[] = [
     arrivalTime: '02:15',
     duration: '12h 15m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 42000, availableSeats: 18 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 16000, availableSeats: 48 },
+      { type: 'first-1',  label: 'First Class 1',  price: 80000,  availableSeats: 8 },
+      { type: 'first-2',  label: 'First Class 2',  price: 62000,  availableSeats: 14 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 42000,  availableSeats: 18 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 32000,  availableSeats: 26 },
+      { type: 'sleeper',  label: 'Sleeper',         price: 55000,  availableSeats: 16 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 16000,  availableSeats: 48 },
     ],
     stops: [
       { stationId: 'ygn', arrivalTime: null, departureTime: '14:00' },
@@ -70,8 +77,10 @@ export const trains: Train[] = [
     arrivalTime: '13:45',
     duration: '6h 15m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 28000, availableSeats: 32 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 12000, availableSeats: 64 },
+      { type: 'first-2',  label: 'First Class 2',  price: 48000,  availableSeats: 20 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 28000,  availableSeats: 32 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 22000,  availableSeats: 36 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 12000,  availableSeats: 64 },
     ],
     stops: [
       { stationId: 'ygn', arrivalTime: null, departureTime: '07:30' },
@@ -90,8 +99,9 @@ export const trains: Train[] = [
     arrivalTime: '15:30',
     duration: '6h 30m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 32000, availableSeats: 20 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 14000, availableSeats: 40 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 32000,  availableSeats: 20 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 24000,  availableSeats: 28 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 14000,  availableSeats: 40 },
     ],
     stops: [
       { stationId: 'mdy', arrivalTime: null, departureTime: '09:00' },
@@ -110,8 +120,11 @@ export const trains: Train[] = [
     arrivalTime: '06:30',
     duration: '10h 30m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 38000, availableSeats: 22 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 15000, availableSeats: 52 },
+      { type: 'first-2',  label: 'First Class 2',  price: 58000,  availableSeats: 10 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 38000,  availableSeats: 22 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 28000,  availableSeats: 28 },
+      { type: 'sleeper',  label: 'Sleeper',         price: 48000,  availableSeats: 20 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 15000,  availableSeats: 52 },
     ],
     stops: [
       { stationId: 'ygn', arrivalTime: null, departureTime: '20:00' },
@@ -130,8 +143,8 @@ export const trains: Train[] = [
     arrivalTime: '11:20',
     duration: '5h 35m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 22000, availableSeats: 28 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 9000, availableSeats: 60 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 22000,  availableSeats: 28 },
+      { type: 'ordinary', label: 'Ordinary Class', price:  9000,  availableSeats: 60 },
     ],
     stops: [
       { stationId: 'ygn', arrivalTime: null, departureTime: '05:45' },
@@ -148,8 +161,11 @@ export const trains: Train[] = [
     arrivalTime: '20:45',
     duration: '12h 45m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 45000, availableSeats: 26 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 18000, availableSeats: 54 },
+      { type: 'first-1',  label: 'First Class 1',  price: 85000,  availableSeats: 10 },
+      { type: 'first-2',  label: 'First Class 2',  price: 65000,  availableSeats: 16 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 45000,  availableSeats: 26 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 35000,  availableSeats: 32 },
+      { type: 'ordinary', label: 'Ordinary Class', price: 18000,  availableSeats: 54 },
     ],
     stops: [
       { stationId: 'mdy', arrivalTime: null, departureTime: '08:00' },
@@ -171,8 +187,9 @@ export const trains: Train[] = [
     arrivalTime: '21:00',
     duration: '4h 30m',
     classes: [
-      { type: 'upper', label: 'Upper Class', price: 18000, availableSeats: 30 },
-      { type: 'ordinary', label: 'Ordinary Class', price: 8000, availableSeats: 70 },
+      { type: 'upper-1',  label: 'Upper Class 1',  price: 18000,  availableSeats: 30 },
+      { type: 'upper-2',  label: 'Upper Class 2',  price: 14000,  availableSeats: 40 },
+      { type: 'ordinary', label: 'Ordinary Class', price:  8000,  availableSeats: 70 },
     ],
     stops: [
       { stationId: 'npt', arrivalTime: null, departureTime: '16:30' },

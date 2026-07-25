@@ -1,13 +1,9 @@
 import { useState } from 'react'
 import { defaultSearch, useBooking } from '../../context/BookingContext'
+import { useLanguage } from '../../context/LanguageContext'
 import type { TripType } from '../../types'
 import { localDateISO } from '../../utils/date'
-import {
-  ArrowRightIcon,
-  CalendarIcon,
-  SwapIcon,
-  UsersIcon,
-} from '../icons'
+import { ArrowRightIcon, CalendarIcon, SwapIcon, UsersIcon } from '../icons'
 import { SearchDateInput, SearchField, SearchSelect } from './SearchField'
 import { StationAutocomplete } from './StationAutocomplete'
 
@@ -16,6 +12,8 @@ const HERO_IMAGE =
 
 export function SearchForm() {
   const { openTicketByReference, setSearchQuery } = useBooking()
+  const { t, lang } = useLanguage()
+
   const [tripType, setTripType] = useState<TripType>(defaultSearch.tripType)
   const [from, setFrom] = useState(defaultSearch.fromStationId)
   const [to, setTo] = useState(defaultSearch.toStationId)
@@ -42,7 +40,6 @@ export function SearchForm() {
     if (type === 'one-way') {
       setReturnDate('')
     } else if (!returnDate) {
-      // Default return date: departure date + 1 day
       const nextDay = new Date(date)
       nextDay.setDate(nextDay.getDate() + 1)
       setReturnDate(localDateISO(nextDay))
@@ -51,7 +48,6 @@ export function SearchForm() {
 
   const handleDepartureDateChange = (newDate: string) => {
     setDate(newDate)
-    // If return date is before new departure date, bump it
     if (tripType === 'round-trip' && returnDate && returnDate <= newDate) {
       const nextDay = new Date(newDate)
       nextDay.setDate(nextDay.getDate() + 1)
@@ -62,11 +58,19 @@ export function SearchForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (from === to) {
-      setError('Choose different departure and arrival stations.')
+      setError(
+        lang === 'mm'
+          ? 'ထွက်ခွာ နှင့် ရောက်ရှိ ဘူတာများ မတူညီပါ။'
+          : 'Choose different departure and arrival stations.'
+      )
       return
     }
     if (tripType === 'round-trip' && (!returnDate || returnDate <= date)) {
-      setError('Return date must be after the departure date.')
+      setError(
+        lang === 'mm'
+          ? 'ပြန်လာသည့်ရက်သည် ထွက်ခွာသည့်ရက်ထက် နောက်ကျရမည်။'
+          : 'Return date must be after the departure date.'
+      )
       return
     }
     setError('')
@@ -83,24 +87,32 @@ export function SearchForm() {
   const handleTicketLookup = (e: React.FormEvent) => {
     e.preventDefault()
     if (!bookingReference.trim()) {
-      setTicketError('Enter your booking reference.')
+      setTicketError(
+        lang === 'mm' ? 'ကိုးကားနံပါတ် ထည့်ပါ။' : 'Enter your booking reference.'
+      )
       return
     }
-
     if (!openTicketByReference(bookingReference)) {
-      setTicketError('No ticket found for that reference on this device.')
+      setTicketError(
+        lang === 'mm'
+          ? 'ဤစက်ပစ္စည်းတွင် ထိုကိုးကားနံပါတ်ဖြင့် လက်မှတ် မတွေ့ပါ။'
+          : 'No ticket found for that reference on this device.'
+      )
       return
     }
-
     setTicketError('')
   }
 
-  // Minimum return date is the day after departure
   const minReturnDate = (() => {
     const d = new Date(date)
     d.setDate(d.getDate() + 1)
     return localDateISO(d)
   })()
+
+  const passengerLabel = (n: number) =>
+    lang === 'mm'
+      ? `${n} ဦး`
+      : `${n} ${n === 1 ? 'passenger' : 'passengers'}`
 
   return (
     <section className="relative flex min-h-screen flex-col justify-center overflow-hidden pt-16">
@@ -118,13 +130,13 @@ export function SearchForm() {
       <div className="relative mx-auto max-w-3xl px-4 py-14 sm:px-6 sm:py-20 lg:py-24">
         <div className="mb-8 text-center sm:mb-10">
           <p className="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-emerald-300/90">
-            Myanmar Railways
+            {lang === 'mm' ? 'မြန်မာ့မီးရထား' : 'Myanmar Railways'}
           </p>
           <h1 className="text-3xl font-semibold tracking-tight text-white sm:text-4xl lg:text-[2.75rem] lg:leading-tight">
-            Where would you like to go?
+            {t('search_title')}
           </h1>
           <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-300 sm:text-base">
-            Compare routes, pick your seat, and get your e-ticket in minutes.
+            {t('search_subtitle')}
           </p>
         </div>
 
@@ -141,7 +153,7 @@ export function SearchForm() {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                One way
+                {t('search_oneway')}
               </button>
               <button
                 type="button"
@@ -152,25 +164,20 @@ export function SearchForm() {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Round trip
+                {t('search_roundtrip')}
               </button>
             </div>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
-              <StationAutocomplete
-                label="From"
-                value={from}
-                onChange={setFrom}
-                excludeId={to}
-              />
+              <StationAutocomplete label={t('search_from')} value={from} onChange={setFrom} excludeId={to} />
 
               <div className="flex justify-center md:pb-1">
                 <button
                   type="button"
                   onClick={handleSwap}
-                  aria-label="Swap departure and arrival"
+                  aria-label={lang === 'mm' ? 'ထွက်ခွာ နှင့် ရောက်ရှိ ဘူတာ လဲလှယ်ရန်' : 'Swap departure and arrival'}
                   className="group flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-md shadow-slate-900/10 transition hover:border-emerald-400 hover:text-emerald-600 hover:shadow-lg active:scale-95"
                 >
                   <SwapIcon
@@ -180,16 +187,11 @@ export function SearchForm() {
                 </button>
               </div>
 
-              <StationAutocomplete
-                label="To"
-                value={to}
-                onChange={setTo}
-                excludeId={from}
-              />
+              <StationAutocomplete label={t('search_to')} value={to} onChange={setTo} excludeId={from} />
             </div>
 
             <div className={`grid gap-4 ${tripType === 'round-trip' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
-              <SearchField label="Departure" icon={<CalendarIcon size={18} />}>
+              <SearchField label={t('search_departure')} icon={<CalendarIcon size={18} />}>
                 <SearchDateInput
                   type="date"
                   value={date}
@@ -201,7 +203,7 @@ export function SearchForm() {
 
               {tripType === 'round-trip' && (
                 <div className="return-date-enter">
-                  <SearchField label="Return" icon={<CalendarIcon size={18} />}>
+                  <SearchField label={t('search_return')} icon={<CalendarIcon size={18} />}>
                     <SearchDateInput
                       type="date"
                       value={returnDate}
@@ -213,15 +215,10 @@ export function SearchForm() {
                 </div>
               )}
 
-              <SearchField label="Passengers" icon={<UsersIcon size={18} />}>
-                <SearchSelect
-                  value={passengers}
-                  onChange={(e) => setPassengers(Number(e.target.value))}
-                >
+              <SearchField label={t('search_passengers')} icon={<UsersIcon size={18} />}>
+                <SearchSelect value={passengers} onChange={(e) => setPassengers(Number(e.target.value))}>
                   {[1, 2, 3, 4, 5, 6].map((n) => (
-                    <option key={n} value={n}>
-                      {n} {n === 1 ? 'passenger' : 'passengers'}
-                    </option>
+                    <option key={n} value={n}>{passengerLabel(n)}</option>
                   ))}
                 </SearchSelect>
               </SearchField>
@@ -237,56 +234,49 @@ export function SearchForm() {
               type="submit"
               className="search-cta group flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-semibold text-white"
             >
-              Search trains
-              <ArrowRightIcon
-                size={20}
-                className="transition-transform duration-200 group-hover:translate-x-1"
-              />
+              {t('search_btn')}
+              <ArrowRightIcon size={20} className="transition-transform duration-200 group-hover:translate-x-1" />
             </button>
           </form>
         </div>
 
+        {/* Ticket lookup */}
         <div className="mt-5 rounded-2xl border border-white/15 bg-slate-950/35 p-4 backdrop-blur-md sm:flex sm:items-center sm:gap-5 sm:px-5">
           <div className="mb-3 sm:mb-0 sm:min-w-0 sm:flex-1">
-            <p className="text-sm font-semibold text-white">Already have a ticket?</p>
+            <p className="text-sm font-semibold text-white">{t('search_have_ticket')}</p>
             <p className="mt-0.5 text-xs text-slate-300">
-              Enter your booking reference to view or print it.
+              {lang === 'mm'
+                ? 'ကိုးကားနံပါတ်ဖြင့် သင်၏ လက်မှတ်ကို ကြည့်ရှုနိုင်သည်'
+                : 'Enter your booking reference to view or print it.'}
             </p>
           </div>
           <form onSubmit={handleTicketLookup} className="sm:w-[22rem]">
             <label className="sr-only" htmlFor="booking-reference">
-              Booking reference
+              {lang === 'mm' ? 'ကိုးကားနံပါတ်' : 'Booking reference'}
             </label>
             <div className="flex gap-2">
               <input
                 id="booking-reference"
                 type="text"
                 value={bookingReference}
-                onChange={(e) => {
-                  setBookingReference(e.target.value)
-                  setTicketError('')
-                }}
-                placeholder="MMR-XXXXXXXX"
+                onChange={(e) => { setBookingReference(e.target.value); setTicketError('') }}
+                placeholder={t('search_ref_placeholder')}
                 className="min-w-0 flex-1 rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-sm font-medium uppercase text-slate-900 outline-none placeholder:normal-case placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20"
               />
               <button
                 type="submit"
                 className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-emerald-50"
               >
-                Find ticket
+                {t('search_find_ticket')}
               </button>
             </div>
             {ticketError && (
-              <p className="mt-2 text-xs font-medium text-rose-200" role="alert">
-                {ticketError}
-              </p>
+              <p className="mt-2 text-xs font-medium text-rose-200" role="alert">{ticketError}</p>
             )}
           </form>
         </div>
 
-        <p className="mt-6 text-center text-xs text-slate-400/90">
-          Ticket booking · schedules and payments
-        </p>
+        <p className="mt-6 text-center text-xs text-slate-400/90">{t('search_footer')}</p>
       </div>
     </section>
   )

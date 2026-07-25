@@ -212,6 +212,87 @@
   cursor: pointer;
 }
 
+/* ── Search result card ───────────────────────────── */
+.result-card {
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.result-card:hover {
+  box-shadow:
+    0 4px 20px rgba(15, 39, 68, 0.09),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transform: translateY(-1px);
+}
+
+/* Timeline dots */
+.result-dot {
+  display: block;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.result-dot--from {
+  background: #059669;
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.18);
+}
+
+.result-dot--to {
+  background: #0f2744;
+  box-shadow: 0 0 0 3px rgba(15, 39, 68, 0.15);
+}
+
+/* Dashed connecting line */
+.result-line {
+  display: block;
+  width: 2px;
+  background: repeating-linear-gradient(
+    to bottom,
+    #94a3b8 0px,
+    #94a3b8 4px,
+    transparent 4px,
+    transparent 9px
+  );
+  margin: 4px 0;
+}
+
+/* Select class button */
+.result-select-btn {
+  background: linear-gradient(135deg, #0f2744 0%, #059669 100%);
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.25);
+}
+
+.result-select-btn:hover {
+  filter: brightness(1.08);
+}
+
+/* Book now button */
+.result-book-btn {
+  background: #059669;
+  box-shadow: 0 2px 6px rgba(5, 150, 105, 0.3);
+}
+
+.result-book-btn:hover {
+  background: #047857;
+}
+
+/* Class rows expand */
+@keyframes class-rows-enter {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.class-rows-expand {
+  animation: class-rows-enter 0.25s ease-out both;
+}
+
 /* Train card */
 .train-card {
   transition: box-shadow 0.2s ease, transform 0.2s ease;

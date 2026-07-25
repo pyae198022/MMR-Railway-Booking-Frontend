@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
+import { useLanguage } from '../../context/LanguageContext'
 import { formatNrcHint, validateNrc } from '../../utils/nrc'
 import { ArrowRightIcon, ShieldCheckIcon } from '../icons'
 import { Button } from '../ui/Button'
@@ -10,68 +11,40 @@ import { OrderSummary } from '../ui/OrderSummary'
 import { PageHeader } from '../ui/PageHeader'
 
 export function VerificationForm() {
-  const {
-    searchQuery,
-    selectedTrain,
-    selectedClass,
-    selectedSeats,
-    verifiedUser,
-    userProfile,
-    setVerifiedUser,
-    updateUserProfile,
-    goToStep,
-    totalPrice,
-  } = useBooking()
+  const { searchQuery, selectedTrain, selectedClass, selectedSeats, verifiedUser, userProfile, setVerifiedUser, updateUserProfile, goToStep, totalPrice } = useBooking()
+  const { t, lang } = useLanguage()
 
   const [name, setName] = useState(userProfile?.fullName ?? verifiedUser?.name ?? '')
-  const [nrc, setNrc] = useState(userProfile?.nrc ?? verifiedUser?.nrc ?? '')
-  const [error, setError] = useState('')
+  const [nrc,  setNrc]  = useState(userProfile?.nrc     ?? verifiedUser?.nrc  ?? '')
+  const [error,    setError]    = useState('')
   const [verified, setVerified] = useState(!!verifiedUser)
 
   if (!selectedTrain || !selectedClass || !searchQuery) return null
 
   const from = getStationById(selectedTrain.fromStationId)
-  const to = getStationById(selectedTrain.toStationId)
-  const classLabel =
-    selectedTrain.classes.find((c) => c.type === selectedClass)?.label ?? selectedClass
+  const to   = getStationById(selectedTrain.toStationId)
+  const classLabel = selectedTrain.classes.find((c) => c.type === selectedClass)?.label ?? selectedClass
 
   const handleVerify = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!name.trim()) {
-      setError('Full name is required.')
-      return
-    }
+    if (!name.trim()) { setError(t('verify_error_name')); return }
     if (!validateNrc(nrc)) {
-      setError(`Invalid NRC format. Example: ${formatNrcHint()}`)
+      setError(`${t('verify_error_nrc')} ${lang === 'mm' ? '။ ဥပမာ:' : 'Example:'} ${formatNrcHint()}`)
       return
     }
     setError('')
-    setVerifiedUser({
-      name: name.trim(),
-      nrc: nrc.trim(),
-      verifiedAt: new Date().toISOString(),
-    })
-    if (userProfile) {
-      updateUserProfile({
-        fullName: name.trim(),
-        phone: userProfile.phone,
-        nrc: nrc.trim(),
-      })
-    }
+    setVerifiedUser({ name: name.trim(), nrc: nrc.trim(), verifiedAt: new Date().toISOString() })
+    if (userProfile) updateUserProfile({ fullName: name.trim(), phone: userProfile.phone, nrc: nrc.trim() })
     setVerified(true)
-  }
-
-  const handleContinue = () => {
-    goToStep('passengers')
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
       <div className="lg:col-span-2">
         <PageHeader
-          title="Identity verification"
-          description="Verify your Myanmar NRC to continue booking"
-          backLabel="Back to seats"
+          title={t('verify_title')}
+          description={t('verify_desc')}
+          backLabel={t('verify_back')}
           onBack={() => goToStep('seats')}
         />
 
@@ -79,73 +52,44 @@ export function VerificationForm() {
           <div className="border-b border-slate-100 bg-slate-50/80 px-5 py-4">
             <div className="flex items-center gap-2 text-sm font-medium text-slate-700">
               <ShieldCheckIcon size={18} className="text-emerald-600" />
-              Primary passenger verification
+              {t('verify_heading')}
             </div>
-            <p className="mt-1 text-xs text-slate-500">
-              Required for all Myanmar Railways online bookings (mock validation).
-            </p>
+            <p className="mt-1 text-xs text-slate-500">{t('verify_note')}</p>
           </div>
 
           <form onSubmit={handleVerify} className="space-y-4 p-5">
             <div>
-              <FieldLabel>Full name (as on NRC)</FieldLabel>
-              <TextInput
-                value={name}
-                onChange={(e) => {
-                  setName(e.target.value)
-                  setVerified(false)
-                }}
-                placeholder="Aung Aung"
-                disabled={verified}
-              />
+              <FieldLabel>{t('verify_fullname')}</FieldLabel>
+              <TextInput value={name} onChange={(e) => { setName(e.target.value); setVerified(false) }} placeholder="Aung Aung" disabled={verified} />
             </div>
             <div>
-              <FieldLabel>NRC number</FieldLabel>
-              <TextInput
-                value={nrc}
-                onChange={(e) => {
-                  setNrc(e.target.value)
-                  setVerified(false)
-                }}
-                placeholder={formatNrcHint()}
-                disabled={verified}
-              />
-              <p className="mt-1.5 text-xs text-slate-500">
-                Format: township code / name (parent) + 6 digits
-              </p>
+              <FieldLabel>{t('verify_nrc')}</FieldLabel>
+              <TextInput value={nrc} onChange={(e) => { setNrc(e.target.value); setVerified(false) }} placeholder={formatNrcHint()} disabled={verified} />
+              <p className="mt-1.5 text-xs text-slate-500">{t('verify_nrc_format')}</p>
             </div>
 
             {error && (
-              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
-                {error}
-              </p>
+              <p className="rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
             )}
-
             {verified && (
               <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm text-emerald-800">
                 <ShieldCheckIcon size={16} />
-                NRC verified successfully
+                {t('verify_success')}
               </div>
             )}
 
             <div className="flex flex-wrap gap-3 pt-1">
               {!verified ? (
                 <Button type="submit">
-                  Verify NRC
-                  <ShieldCheckIcon size={16} />
+                  {t('verify_btn')} <ShieldCheckIcon size={16} />
                 </Button>
               ) : (
                 <>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    onClick={() => setVerified(false)}
-                  >
-                    Edit details
+                  <Button type="button" variant="secondary" onClick={() => setVerified(false)}>
+                    {t('verify_edit')}
                   </Button>
-                  <Button type="button" onClick={handleContinue}>
-                    Continue to passenger details
-                    <ArrowRightIcon size={16} />
+                  <Button type="button" onClick={() => goToStep('passengers')}>
+                    {t('verify_continue')} <ArrowRightIcon size={16} />
                   </Button>
                 </>
               )}
