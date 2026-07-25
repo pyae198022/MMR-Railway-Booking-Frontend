@@ -1,13 +1,25 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
 import type { Passenger } from '../../types'
+import { formatNrcHint, validateNrc } from '../../utils/nrc'
 import { ArrowRightIcon } from '../icons'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { FieldLabel, TextInput } from '../ui/Field'
 import { OrderSummary } from '../ui/OrderSummary'
 import { PageHeader } from '../ui/PageHeader'
+
+function createPassengerForms(
+  count: number,
+  passengers: Passenger[],
+  primaryPassenger: Passenger | null,
+): Passenger[] {
+  return Array.from({ length: count }, (_, index) => ({
+    name: index === 0 && primaryPassenger ? primaryPassenger.name : passengers[index]?.name ?? '',
+    nrc: index === 0 && primaryPassenger ? primaryPassenger.nrc : passengers[index]?.nrc ?? '',
+  }))
+}
 
 export function PassengerForm() {
   const {
@@ -16,30 +28,33 @@ export function PassengerForm() {
     selectedClass,
     selectedSeats,
     passengers,
+    userProfile,
+    verifiedUser,
     setPassengers,
     goToStep,
     totalPrice,
   } = useBooking()
 
   const count = searchQuery?.passengerCount ?? 1
+  const profilePassenger = useMemo(
+    () =>
+      userProfile?.fullName && userProfile.nrc
+        ? { name: userProfile.fullName, nrc: userProfile.nrc }
+        : null,
+    [userProfile],
+  )
+  const primaryPassenger = useMemo(
+    () => profilePassenger ?? verifiedUser,
+    [profilePassenger, verifiedUser],
+  )
   const [forms, setForms] = useState<Passenger[]>(
-    passengers.length === count
-      ? passengers
-      : Array.from({ length: count }, (_, i) => ({
-          name: passengers[i]?.name ?? '',
-          nrc: passengers[i]?.nrc ?? '',
-        })),
+    createPassengerForms(count, passengers, primaryPassenger),
   )
   const [errors, setErrors] = useState<string[]>([])
 
   useEffect(() => {
-    setForms(
-      Array.from({ length: count }, (_, i) => ({
-        name: passengers[i]?.name ?? '',
-        nrc: passengers[i]?.nrc ?? '',
-      })),
-    )
-  }, [count, passengers])
+    setForms(createPassengerForms(count, passengers, primaryPassenger))
+  }, [count, passengers, primaryPassenger])
 
   if (!selectedTrain || !selectedClass || !searchQuery) return null
 
@@ -48,16 +63,13 @@ export function PassengerForm() {
   const classLabel =
     selectedTrain.classes.find((c) => c.type === selectedClass)?.label ?? selectedClass
 
-  const validateNrc = (nrc: string) =>
-    /^\d{1,2}\/[A-Za-z]+\(N\)\d{6}$/.test(nrc.trim())
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const newErrors: string[] = []
 
     forms.forEach((p, i) => {
       if (!p.name.trim()) newErrors[i] = 'Name is required'
-      else if (!validateNrc(p.nrc)) newErrors[i] = 'Use format 12/ABC(N)123456'
+      else if (!validateNrc(p.nrc)) newErrors[i] = `Use format ${formatNrcHint()}`
     })
 
     setErrors(newErrors)
@@ -102,6 +114,7 @@ export function PassengerForm() {
                     value={passenger.name}
                     onChange={(e) => updateForm(index, 'name', e.target.value)}
                     placeholder="Aung Aung"
+                    disabled={index === 0 && profilePassenger !== null}
                   />
                 </div>
                 <div>
@@ -109,10 +122,16 @@ export function PassengerForm() {
                   <TextInput
                     value={passenger.nrc}
                     onChange={(e) => updateForm(index, 'nrc', e.target.value)}
-                    placeholder="12/ABC(N)123456"
+                    placeholder={formatNrcHint()}
+                    disabled={index === 0 && profilePassenger !== null}
                   />
                 </div>
               </div>
+              {index === 0 && profilePassenger && (
+                <p className="mt-3 text-xs text-emerald-700">
+                  Primary passenger details are taken from your signed-in profile.
+                </p>
+              )}
               {errors[index] && (
                 <p className="mt-2 text-sm text-red-600">{errors[index]}</p>
               )}

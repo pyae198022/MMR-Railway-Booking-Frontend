@@ -16,13 +16,15 @@ export function VerificationForm() {
     selectedClass,
     selectedSeats,
     verifiedUser,
+    userProfile,
     setVerifiedUser,
+    updateUserProfile,
     goToStep,
     totalPrice,
   } = useBooking()
 
-  const [name, setName] = useState(verifiedUser?.name ?? '')
-  const [nrc, setNrc] = useState(verifiedUser?.nrc ?? '')
+  const [name, setName] = useState(userProfile?.fullName ?? verifiedUser?.name ?? '')
+  const [nrc, setNrc] = useState(userProfile?.nrc ?? verifiedUser?.nrc ?? '')
   const [error, setError] = useState('')
   const [verified, setVerified] = useState(!!verifiedUser)
 
@@ -49,6 +51,13 @@ export function VerificationForm() {
       nrc: nrc.trim(),
       verifiedAt: new Date().toISOString(),
     })
+    if (userProfile) {
+      updateUserProfile({
+        fullName: name.trim(),
+        phone: userProfile.phone,
+        nrc: nrc.trim(),
+      })
+    }
     setVerified(true)
   }
 

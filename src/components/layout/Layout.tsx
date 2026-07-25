@@ -5,9 +5,9 @@ import { Header } from './Header'
 import { StepIndicator } from './StepIndicator'
 
 export function Layout({ children }: { children: ReactNode }) {
-  const { step } = useBooking()
+  const { appView, step } = useBooking()
 
-  const isHero = step === 'search'
+  const isHero = appView === 'booking' && step === 'search'
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50">
@@ -20,7 +20,7 @@ export function Layout({ children }: { children: ReactNode }) {
             : 'mx-auto w-full max-w-4xl flex-1 px-4 py-8 sm:px-6'
         }
       >
-        {!isHero && step !== 'confirmation' && (
+        {appView === 'booking' && !isHero && step !== 'confirmation' && (
           <div className="mb-6">
             <StepIndicator currentStep={step} />
           </div>

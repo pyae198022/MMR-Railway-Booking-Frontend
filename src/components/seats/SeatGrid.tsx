@@ -74,6 +74,7 @@ export function SeatGrid() {
     searchQuery,
     seats,
     selectedSeats,
+    userProfile,
     toggleSeat,
     canProceedFromSeats,
     goToStep,
@@ -91,6 +92,7 @@ export function SeatGrid() {
   const required = searchQuery.passengerCount
   const seatsLabel =
     selectedSeats.length > 0 ? selectedSeats.join(', ') : 'None yet'
+  const hasCompleteProfile = Boolean(userProfile?.fullName && userProfile.nrc)
 
   return (
     <div className="pb-28">
@@ -174,7 +176,7 @@ export function SeatGrid() {
           <button
             type="button"
             disabled={!canProceedFromSeats}
-            onClick={() => goToStep('passengers')}
+            onClick={() => goToStep(hasCompleteProfile ? 'passengers' : 'verification')}
             className={
               canProceedFromSeats
                 ? 'search-cta group flex shrink-0 items-center justify-center gap-2 rounded-xl px-6 py-3.5 text-sm font-semibold text-white'

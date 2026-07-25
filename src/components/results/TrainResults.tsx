@@ -1,6 +1,7 @@
 import { formatPrice, getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
 import type { ClassType, Train } from '../../types'
+import { parseLocalDate } from '../../utils/date'
 import { ClockIcon } from '../icons'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -71,7 +72,7 @@ export function TrainResults() {
 
   const from = getStationById(searchQuery.fromStationId)
   const to = getStationById(searchQuery.toStationId)
-  const dateLabel = new Date(searchQuery.departureDate).toLocaleDateString('en-GB', {
+  const dateLabel = parseLocalDate(searchQuery.departureDate).toLocaleDateString('en-GB', {
     weekday: 'short',
     day: 'numeric',
     month: 'short',

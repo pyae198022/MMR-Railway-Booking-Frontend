@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { defaultSearch, useBooking } from '../../context/BookingContext'
+import { localDateISO } from '../../utils/date'
 import {
   ArrowRightIcon,
   CalendarIcon,
@@ -13,13 +14,15 @@ const HERO_IMAGE =
   'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=2400&q=80'
 
 export function SearchForm() {
-  const { setSearchQuery } = useBooking()
+  const { openTicketByReference, setSearchQuery } = useBooking()
   const [from, setFrom] = useState(defaultSearch.fromStationId)
   const [to, setTo] = useState(defaultSearch.toStationId)
   const [date, setDate] = useState(defaultSearch.departureDate)
   const [passengers, setPassengers] = useState(defaultSearch.passengerCount)
   const [error, setError] = useState('')
   const [swapSpin, setSwapSpin] = useState(false)
+  const [bookingReference, setBookingReference] = useState('')
+  const [ticketError, setTicketError] = useState('')
 
   const maxDate = new Date()
   maxDate.setDate(maxDate.getDate() + 60)
@@ -44,6 +47,21 @@ export function SearchForm() {
       departureDate: date,
       passengerCount: passengers,
     })
+  }
+
+  const handleTicketLookup = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!bookingReference.trim()) {
+      setTicketError('Enter your booking reference.')
+      return
+    }
+
+    if (!openTicketByReference(bookingReference)) {
+      setTicketError('No ticket found for that reference on this device.')
+      return
+    }
+
+    setTicketError('')
   }
 
   return (
@@ -109,8 +127,8 @@ export function SearchForm() {
                 <SearchDateInput
                   type="date"
                   value={date}
-                  min={new Date().toISOString().split('T')[0]}
-                  max={maxDate.toISOString().split('T')[0]}
+                  min={localDateISO()}
+                  max={localDateISO(maxDate)}
                   onChange={(e) => setDate(e.target.value)}
                 />
               </SearchField>
@@ -145,6 +163,44 @@ export function SearchForm() {
                 className="transition-transform duration-200 group-hover:translate-x-1"
               />
             </button>
+          </form>
+        </div>
+
+        <div className="mt-5 rounded-2xl border border-white/15 bg-slate-950/35 p-4 backdrop-blur-md sm:flex sm:items-center sm:gap-5 sm:px-5">
+          <div className="mb-3 sm:mb-0 sm:min-w-0 sm:flex-1">
+            <p className="text-sm font-semibold text-white">Already have a ticket?</p>
+            <p className="mt-0.5 text-xs text-slate-300">
+              Enter your booking reference to view or print it.
+            </p>
+          </div>
+          <form onSubmit={handleTicketLookup} className="sm:w-[22rem]">
+            <label className="sr-only" htmlFor="booking-reference">
+              Booking reference
+            </label>
+            <div className="flex gap-2">
+              <input
+                id="booking-reference"
+                type="text"
+                value={bookingReference}
+                onChange={(e) => {
+                  setBookingReference(e.target.value)
+                  setTicketError('')
+                }}
+                placeholder="MMR-XXXXXXXX"
+                className="min-w-0 flex-1 rounded-xl border border-white/20 bg-white/95 px-3 py-2.5 text-sm font-medium uppercase text-slate-900 outline-none placeholder:normal-case placeholder:text-slate-400 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/20"
+              />
+              <button
+                type="submit"
+                className="rounded-xl bg-white px-4 py-2.5 text-sm font-semibold text-slate-900 transition hover:bg-emerald-50"
+              >
+                Find ticket
+              </button>
+            </div>
+            {ticketError && (
+              <p className="mt-2 text-xs font-medium text-rose-200" role="alert">
+                {ticketError}
+              </p>
+            )}
           </form>
         </div>
 

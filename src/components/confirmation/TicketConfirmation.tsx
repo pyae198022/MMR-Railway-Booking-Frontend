@@ -1,5 +1,6 @@
 import { formatPrice, getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
+import { parseLocalDate } from '../../utils/date'
 import { CheckCircleIcon } from '../icons'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
@@ -15,7 +16,7 @@ export function TicketConfirmation() {
   const classLabel =
     ticket.train.classes.find((c) => c.type === ticket.classType)?.label ?? ticket.classType
 
-  const formattedDate = new Date(ticket.searchQuery.departureDate).toLocaleDateString(
+  const formattedDate = parseLocalDate(ticket.searchQuery.departureDate).toLocaleDateString(
     'en-GB',
     { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' },
   )

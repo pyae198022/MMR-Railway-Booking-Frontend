@@ -1,4 +1,4 @@
-export type AppView = 'booking' | 'my-tickets'
+export type AppView = 'booking' | 'register' | 'profile'
 
 export type BookingStep =
   | 'search'
@@ -63,6 +63,14 @@ export interface VerifiedUser {
   name: string
   nrc: string
   verifiedAt: string
+}
+
+export interface UserProfile {
+  id: string
+  fullName: string
+  phone: string
+  nrc: string
+  createdAt: string
 }
 
 export type PaymentMethod = 'kbzpay' | 'cbpay' | 'mmqr'

@@ -18,6 +18,7 @@ import type {
   SearchQuery,
   Seat,
   Train,
+  UserProfile,
   VerifiedUser,
 } from '../types'
 import {
@@ -27,6 +28,8 @@ import {
   loadBookingHistory,
   saveBookingHistory,
 } from '../utils/bookingStorage'
+import { localDateISO } from '../utils/date'
+import { clearUserProfile, loadUserProfile, saveUserProfile } from '../utils/userStorage'
 
 interface BookingContextValue {
   appView: AppView
@@ -38,6 +41,7 @@ interface BookingContextValue {
   seats: Seat[]
   selectedSeats: string[]
   verifiedUser: VerifiedUser | null
+  userProfile: UserProfile | null
   passengers: Passenger[]
   paymentMethod: PaymentMethod | null
   ticket: BookingTicket | null
@@ -53,6 +57,10 @@ interface BookingContextValue {
   setVerifiedUser: (user: VerifiedUser) => void
   setPassengers: (passengers: Passenger[]) => void
   setPaymentMethod: (method: PaymentMethod) => void
+  registerUser: (details: Pick<UserProfile, 'fullName' | 'phone' | 'nrc'>) => void
+  updateUserProfile: (details: Pick<UserProfile, 'fullName' | 'phone' | 'nrc'>) => void
+  logoutUser: () => void
+  openTicketByReference: (reference: string) => boolean
   processPayment: () => Promise<void>
   goToStep: (step: BookingStep) => void
   resetBooking: () => void
@@ -65,7 +73,7 @@ const BookingContext = createContext<BookingContextValue | null>(null)
 const defaultSearch: SearchQuery = {
   fromStationId: 'ygn',
   toStationId: 'mdy',
-  departureDate: new Date().toISOString().split('T')[0],
+  departureDate: localDateISO(),
   passengerCount: 1,
 }
 
@@ -82,6 +90,10 @@ function generateTicketId(): string {
   return `tkt-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 }
 
+function generateUserId(): string {
+  return `usr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
 export function BookingProvider({ children }: { children: ReactNode }) {
   const [appView, setAppViewState] = useState<AppView>('booking')
   const [step, setStep] = useState<BookingStep>('search')
@@ -92,6 +104,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const [seats, setSeats] = useState<Seat[]>([])
   const [selectedSeats, setSelectedSeats] = useState<string[]>([])
   const [verifiedUser, setVerifiedUserState] = useState<VerifiedUser | null>(null)
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(() => loadUserProfile())
   const [passengers, setPassengersState] = useState<Passenger[]>([])
   const [paymentMethod, setPaymentMethodState] = useState<PaymentMethod | null>(null)
   const [ticket, setTicket] = useState<BookingTicket | null>(null)
@@ -175,6 +188,56 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setPaymentMethodState(method)
   }, [])
 
+  const registerUser = useCallback(
+    (details: Pick<UserProfile, 'fullName' | 'phone' | 'nrc'>) => {
+      const profile: UserProfile = {
+        id: userProfile?.id ?? generateUserId(),
+        ...details,
+        createdAt: userProfile?.createdAt ?? new Date().toISOString(),
+      }
+      setUserProfile(profile)
+      saveUserProfile(profile)
+      setAppViewState('profile')
+    },
+    [userProfile],
+  )
+
+  const updateUserProfile = useCallback(
+    (details: Pick<UserProfile, 'fullName' | 'phone' | 'nrc'>) => {
+      setUserProfile((currentProfile) => {
+        if (!currentProfile) return currentProfile
+
+        const profile = { ...currentProfile, ...details }
+        saveUserProfile(profile)
+        return profile
+      })
+    },
+    [],
+  )
+
+  const logoutUser = useCallback(() => {
+    clearUserProfile()
+    setUserProfile(null)
+    setAppViewState('booking')
+  }, [])
+
+  const openTicketByReference = useCallback(
+    (reference: string) => {
+      const normalizedReference = reference.trim().toUpperCase()
+      const matchingTicket = bookingHistory.find(
+        (historyTicket) => historyTicket.reference.toUpperCase() === normalizedReference,
+      )
+
+      if (!matchingTicket) return false
+
+      setTicket(matchingTicket)
+      setAppViewState('booking')
+      setStep('confirmation')
+      return true
+    },
+    [bookingHistory],
+  )
+
   const totalPrice = useMemo(() => {
     if (!selectedTrain || !selectedClass) return 0
     const classInfo = selectedTrain.classes.find((c) => c.type === selectedClass)
@@ -193,10 +256,20 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       if (nextStep === 'payment') {
         setReservationExpiresAt(Date.now() + RESERVATION_DURATION_MS)
         setReservationSecondsLeft(Math.floor(RESERVATION_DURATION_MS / 1000))
+      } else if (nextStep === 'seats' && reservationExpired) {
+        setSeats((previousSeats) =>
+          previousSeats.map((seat) =>
+            seat.status === 'selected' ? { ...seat, status: 'available' } : seat,
+          ),
+        )
+        setSelectedSeats([])
+        setPaymentMethodState(null)
+        setReservationExpiresAt(null)
+        setReservationSecondsLeft(0)
       }
       setStep(nextStep)
     },
-    [],
+    [reservationExpired],
   )
 
   const processPayment = useCallback(async () => {
@@ -205,13 +278,21 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       !selectedClass ||
       !searchQuery ||
       !paymentMethod ||
-      reservationExpired
+      !reservationExpiresAt ||
+      reservationExpired ||
+      Date.now() >= reservationExpiresAt
     ) {
       return
     }
 
     setIsProcessingPayment(true)
     await new Promise((resolve) => setTimeout(resolve, 1800))
+
+    if (Date.now() >= reservationExpiresAt) {
+      setIsProcessingPayment(false)
+      setReservationSecondsLeft(0)
+      return
+    }
 
     const departureDate = searchQuery.departureDate
     const newTicket: BookingTicket = {
@@ -242,6 +323,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     passengers,
     totalPrice,
     reservationExpired,
+    reservationExpiresAt,
   ])
 
   const resetBooking = useCallback(() => {
@@ -272,6 +354,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       seats,
       selectedSeats,
       verifiedUser,
+      userProfile,
       passengers,
       paymentMethod,
       ticket,
@@ -287,6 +370,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       setVerifiedUser,
       setPassengers,
       setPaymentMethod,
+      registerUser,
+      updateUserProfile,
+      logoutUser,
+      openTicketByReference,
       processPayment,
       goToStep,
       resetBooking,
@@ -303,6 +390,7 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       seats,
       selectedSeats,
       verifiedUser,
+      userProfile,
       passengers,
       paymentMethod,
       ticket,
@@ -318,6 +406,10 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       setVerifiedUser,
       setPassengers,
       setPaymentMethod,
+      registerUser,
+      updateUserProfile,
+      logoutUser,
+      openTicketByReference,
       processPayment,
       goToStep,
       resetBooking,

@@ -1,11 +1,12 @@
 import type { BookingTicket, TicketStatus } from '../types'
+import { parseLocalDate } from './date'
 
 const STORAGE_KEY = 'mmr-booking-history'
 
 export function getTicketStatus(departureDate: string): TicketStatus {
   const today = new Date()
   today.setHours(0, 0, 0, 0)
-  const departure = new Date(departureDate)
+  const departure = parseLocalDate(departureDate)
   departure.setHours(0, 0, 0, 0)
   return departure >= today ? 'active' : 'past'
 }

@@ -3,6 +3,7 @@ import type { BookingStep } from '../../types'
 const visibleSteps: { key: BookingStep; label: string }[] = [
   { key: 'results', label: 'Trains' },
   { key: 'seats', label: 'Seats' },
+  { key: 'verification', label: 'Verify' },
   { key: 'passengers', label: 'Details' },
   { key: 'payment', label: 'Payment' },
 ]
