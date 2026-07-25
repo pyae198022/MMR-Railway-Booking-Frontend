@@ -1,46 +1,70 @@
-# MMR Railway — Online Ticket Booking (Frontend)
+# MMR Railway - Online Ticket Booking
 
-A modern, responsive **Myanmar Railways** ticket booking demo built with **React**, **TypeScript**, **Tailwind CSS**, and **Lucide React**. The full multi-step flow runs on **mock data** and **React Context** so you can swap in real API endpoints later.
+A responsive Myanmar Railways ticket booking experience built with React, TypeScript, Tailwind CSS, and Lucide React.
 
 ## Features
 
-- **Home / Search** — From/To stations, departure date, passenger count
-- **Train results** — Filtered schedules with Upper Class & Ordinary Class pricing
-- **Seat selection** — Interactive coach grid (available / selected / booked)
-- **Passenger details** — Name & NRC validation
-- **Mock checkout** — KBZPay or MMQR with simulated payment
-- **E-ticket confirmation** — Booking reference + generated QR code
+- Search routes by departure station, arrival station, date, and passenger count
+- Browse train schedules with Upper Class and Ordinary Class fares
+- Choose seats from an interactive coach layout
+- Register a user profile with name, phone number, and NRC details
+- Reuse signed-in profile details for the primary passenger during booking
+- Verify and save NRC details to the user profile
+- Add passenger details for additional travelers
+- Select KBZPay, CB Pay, or MMQR at checkout
+- Receive an e-ticket with a booking reference and QR code
+- Find saved tickets from the home page using the booking reference
+- View profile details and ticket history from the account page
+- Print confirmed e-tickets
 
-## Tech stack
+## Tech Stack
 
-- React 19 + TypeScript + Vite
-- Tailwind CSS v4 (`@tailwindcss/vite`)
-- Lucide React icons
-- React Context for booking state (no backend required)
+- React 19
+- TypeScript
+- Vite
+- Tailwind CSS v4
+- Lucide React
+- React Context
 
-## Getting started
+## Getting Started
 
 ```bash
-cd ~/Projects/mmr-railway-booking
+git clone <your-repository-url>
+cd mmr-railway-booking
 npm install
 npm run dev
 ```
 
-Open the URL shown in the terminal (typically `http://localhost:5173`).
+Open the local URL shown in the terminal, typically `http://localhost:5173`.
 
-## Project structure
+## Available Scripts
 
+```bash
+npm run dev
+npm run build
+npm run lint
+npm run preview
 ```
+
+## Project Structure
+
+```text
 src/
-  context/BookingContext.tsx   # Global booking state & step navigation
-  data/mockData.ts             # Stations, trains, seat generation
-  components/                  # UI by flow step
-  types/                       # Shared TypeScript types
+  components/
+    account/          # Registration and profile pages
+    confirmation/     # E-ticket confirmation and QR code
+    layout/           # Header, footer, and booking progress
+    passenger/        # Passenger details
+    payment/          # Payment selection and countdown
+    results/          # Train search results
+    search/           # Route search form
+    seats/            # Coach seat selection
+    verification/     # NRC verification
+  context/            # Booking and user profile state
+  data/               # Stations, schedules, fares, and seat layout
+  types/              # Shared TypeScript types
+  utils/              # Date, NRC, ticket, and user storage helpers
 ```
-
-## Plugging in a real API
-
-Replace `searchTrains()` and `generateCoachSeats()` in `src/data/mockData.ts` with fetch calls, and persist bookings via your backend. The context actions (`setSearchQuery`, `selectTrain`, `toggleSeat`, `processPayment`) are the natural integration points.
 
 ## Build
 
