@@ -75,6 +75,7 @@ const defaultSearch: SearchQuery = {
   toStationId: 'mdy',
   departureDate: localDateISO(),
   passengerCount: 1,
+  tripType: 'one-way',
 }
 
 function generateReference(): string {

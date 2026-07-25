@@ -9,7 +9,13 @@ export type BookingStep =
   | 'payment'
   | 'confirmation'
 
-export type ClassType = 'upper' | 'ordinary'
+export type ClassType =
+  | 'first-1'   // First Class 1 – AC, reclining seats (premium)
+  | 'first-2'   // First Class 2 – AC, standard seats
+  | 'upper-1'   // Upper Class 1 – fan-cooled, cushioned assigned seats
+  | 'upper-2'   // Upper Class 2 – fan-cooled, standard assigned seats
+  | 'sleeper'   // Sleeper berths (overnight trains)
+  | 'ordinary'  // Ordinary Class – bench seats, no assignment
 
 export type SeatStatus = 'available' | 'selected' | 'booked'
 
@@ -28,6 +34,13 @@ export interface TrainClass {
   availableSeats: number
 }
 
+export interface TrainStop {
+  stationId: string
+  arrivalTime: string | null   // null for the first station
+  departureTime: string | null // null for the last station
+  stopDuration?: string        // e.g. "5 min"
+}
+
 export interface Train {
   id: string
   name: string
@@ -38,6 +51,7 @@ export interface Train {
   arrivalTime: string
   duration: string
   classes: TrainClass[]
+  stops: TrainStop[]
 }
 
 export interface Seat {
@@ -47,11 +61,15 @@ export interface Seat {
   status: SeatStatus
 }
 
+export type TripType = 'one-way' | 'round-trip'
+
 export interface SearchQuery {
   fromStationId: string
   toStationId: string
   departureDate: string
+  returnDate?: string
   passengerCount: number
+  tripType: TripType
 }
 
 export interface Passenger {

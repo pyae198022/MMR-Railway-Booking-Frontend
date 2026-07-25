@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { defaultSearch, useBooking } from '../../context/BookingContext'
+import type { TripType } from '../../types'
 import { localDateISO } from '../../utils/date'
 import {
   ArrowRightIcon,
@@ -15,9 +16,11 @@ const HERO_IMAGE =
 
 export function SearchForm() {
   const { openTicketByReference, setSearchQuery } = useBooking()
+  const [tripType, setTripType] = useState<TripType>(defaultSearch.tripType)
   const [from, setFrom] = useState(defaultSearch.fromStationId)
   const [to, setTo] = useState(defaultSearch.toStationId)
   const [date, setDate] = useState(defaultSearch.departureDate)
+  const [returnDate, setReturnDate] = useState('')
   const [passengers, setPassengers] = useState(defaultSearch.passengerCount)
   const [error, setError] = useState('')
   const [swapSpin, setSwapSpin] = useState(false)
@@ -34,10 +37,36 @@ export function SearchForm() {
     window.setTimeout(() => setSwapSpin(false), 400)
   }
 
+  const handleTripTypeChange = (type: TripType) => {
+    setTripType(type)
+    if (type === 'one-way') {
+      setReturnDate('')
+    } else if (!returnDate) {
+      // Default return date: departure date + 1 day
+      const nextDay = new Date(date)
+      nextDay.setDate(nextDay.getDate() + 1)
+      setReturnDate(localDateISO(nextDay))
+    }
+  }
+
+  const handleDepartureDateChange = (newDate: string) => {
+    setDate(newDate)
+    // If return date is before new departure date, bump it
+    if (tripType === 'round-trip' && returnDate && returnDate <= newDate) {
+      const nextDay = new Date(newDate)
+      nextDay.setDate(nextDay.getDate() + 1)
+      setReturnDate(localDateISO(nextDay))
+    }
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (from === to) {
       setError('Choose different departure and arrival stations.')
+      return
+    }
+    if (tripType === 'round-trip' && (!returnDate || returnDate <= date)) {
+      setError('Return date must be after the departure date.')
       return
     }
     setError('')
@@ -45,7 +74,9 @@ export function SearchForm() {
       fromStationId: from,
       toStationId: to,
       departureDate: date,
+      returnDate: tripType === 'round-trip' ? returnDate : undefined,
       passengerCount: passengers,
+      tripType,
     })
   }
 
@@ -63,6 +94,13 @@ export function SearchForm() {
 
     setTicketError('')
   }
+
+  // Minimum return date is the day after departure
+  const minReturnDate = (() => {
+    const d = new Date(date)
+    d.setDate(d.getDate() + 1)
+    return localDateISO(d)
+  })()
 
   return (
     <section className="relative flex min-h-screen flex-col justify-center overflow-hidden pt-16">
@@ -91,6 +129,34 @@ export function SearchForm() {
         </div>
 
         <div className="search-card-float rounded-2xl border border-white/20 bg-white/95 p-6 shadow-2xl shadow-slate-900/25 backdrop-blur-xl sm:p-8">
+          {/* Trip type toggle */}
+          <div className="mb-5 flex items-center justify-center">
+            <div className="inline-flex rounded-xl border border-slate-200 bg-slate-100/80 p-1">
+              <button
+                type="button"
+                onClick={() => handleTripTypeChange('one-way')}
+                className={`trip-toggle-btn rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-250 ${
+                  tripType === 'one-way'
+                    ? 'bg-white text-slate-900 shadow-md shadow-slate-900/10'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                One way
+              </button>
+              <button
+                type="button"
+                onClick={() => handleTripTypeChange('round-trip')}
+                className={`trip-toggle-btn rounded-lg px-5 py-2 text-sm font-semibold transition-all duration-250 ${
+                  tripType === 'round-trip'
+                    ? 'bg-white text-slate-900 shadow-md shadow-slate-900/10'
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                Round trip
+              </button>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-4 md:grid-cols-[1fr_auto_1fr] md:items-end">
               <StationAutocomplete
@@ -122,16 +188,30 @@ export function SearchForm() {
               />
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className={`grid gap-4 ${tripType === 'round-trip' ? 'sm:grid-cols-3' : 'sm:grid-cols-2'}`}>
               <SearchField label="Departure" icon={<CalendarIcon size={18} />}>
                 <SearchDateInput
                   type="date"
                   value={date}
                   min={localDateISO()}
                   max={localDateISO(maxDate)}
-                  onChange={(e) => setDate(e.target.value)}
+                  onChange={(e) => handleDepartureDateChange(e.target.value)}
                 />
               </SearchField>
+
+              {tripType === 'round-trip' && (
+                <div className="return-date-enter">
+                  <SearchField label="Return" icon={<CalendarIcon size={18} />}>
+                    <SearchDateInput
+                      type="date"
+                      value={returnDate}
+                      min={minReturnDate}
+                      max={localDateISO(maxDate)}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                    />
+                  </SearchField>
+                </div>
+              )}
 
               <SearchField label="Passengers" icon={<UsersIcon size={18} />}>
                 <SearchSelect
