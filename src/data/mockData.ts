@@ -3,7 +3,7 @@ import type { Seat, Station, Train } from '../types'
 export const stations: Station[] = [
   { id: 'ygn', name: 'Yangon', nameMm: 'ရန်ကုန်' },
   { id: 'mdy', name: 'Mandalay', nameMm: 'မန္တလေး' },
-  { id: 'npt', name: 'Naypyidaw', nameMm: '\u1014\u103F\u1015\u103C\u1004\u103A\u1010\u1031\u102C' },
+  { id: 'npt', name: 'Naypyidaw', nameMm: 'နေပြည်တော်' },
   { id: 'bgn', name: 'Bagan', nameMm: 'ပုဂံ' },
   { id: 'tgo', name: 'Taungoo', nameMm: 'တောင်ငူ' },
   { id: 'bgo', name: 'Bago', nameMm: 'ပဲခူး' },
@@ -12,6 +12,13 @@ export const stations: Station[] = [
   { id: 'thz', name: 'Thazi', nameMm: 'သာစည်' },
   { id: 'mkt', name: 'Meiktila', nameMm: 'မိတ္ထီလာ' },
   { id: 'kyse', name: 'Kyaikto', nameMm: 'ကျိုက်ထို' },
+  // Additional stations for mapping
+  { id: 'sag', name: 'Sagaing', nameMm: 'စစ်ကိုင်း' },
+  { id: 'shw', name: 'Shwenyaung', nameMm: 'ရွှေညောင်' },
+  { id: 'lsk', name: 'Lashio', nameMm: 'လားရှိုး' },
+  { id: 'myk', name: 'Myitkyina', nameMm: 'မြစ်ကြီးနား' },
+  { id: 'hpa', name: 'Hpa-An', nameMm: 'ဘားအံ' },
+  { id: 'tny', name: 'Taunggyi', nameMm: 'တောင်ကြီး' },
 ]
 
 export const trains: Train[] = [
@@ -234,12 +241,53 @@ export function generateCoachSeats(trainId: string, classType: string): Seat[] {
 }
 
 export function getStationById(id: string): Station | undefined {
-  return stations.find((s) => s.id === id)
+  // Map numeric IDs to string IDs if needed
+  const mappedId = stationIdMap[id] || id.toLowerCase()
+  return stations.find((s) => s.id === mappedId)
+}
+
+// Map numeric station IDs from backend to string IDs used in mock data
+const stationIdMap: Record<string, string> = {
+  // Yangon stations
+  '1': 'ygn',   // Yangon Central (YGN)
+  '2': 'ygn',   // Insein (INS) - map to ygn for simplicity
+  '12': 'ygn',  // Htaukkyant (HTY) - map to ygn
+  
+  // Mandalay stations  
+  '6': 'mdy',   // Mandalay (MDY)
+  '10': 'mdy',  // Thazi (THT) - map to mdy
+  '13': 'mdy',  // Pyin Oo Lwin (PHU) - map to mdy
+  '15': 'mdy',  // Kyaukse (KYT) - map to mdy
+  
+  // Naypyitaw
+  '9': 'npt',   // Naypyitaw (NPT)
+  
+  // Bago Region
+  '3': 'bgo',   // Bago (BGN)
+  '4': 'bgo',   // Pyay (PYA) - map to bgo
+  '5': 'bgo',   // Taungoo (TGO) - map to bgo
+  
+  // Sagaing
+  '7': 'sag',   // Sagaing (SAG) - use 'sag' as placeholder
+  '8': 'sag',   // Monywa (MNY) - map to sag
+  '16': 'sag',  // Kalay (KLA) - map to sag
+  
+  // Other major stations
+  '11': 'shw',  // Shwenyaung (SHW) - use 'shw' as placeholder
+  '14': 'lsk',  // Lashio (LSK) - use 'lsk' as placeholder
+  '17': 'myk',  // Myitkyina (MYK) - use 'myk' as placeholder
+  '18': 'hpa',  // Hpa-An (HPA) - use 'hpa' as placeholder
+  '19': 'maw',  // Mawlamyine (MAW) - use 'maw' as placeholder
+  '20': 'tny',  // Taunggyi (TNY) - use 'tny' as placeholder
 }
 
 export function searchTrains(fromStationId: string, toStationId: string): Train[] {
+  // Convert numeric IDs to string IDs if needed
+  const fromId = stationIdMap[fromStationId] || fromStationId.toLowerCase()
+  const toId = stationIdMap[toStationId] || toStationId.toLowerCase()
+  
   return trains.filter(
-    (t) => t.fromStationId === fromStationId && t.toStationId === toStationId,
+    (t) => t.fromStationId === fromId && t.toStationId === toId,
   )
 }
 

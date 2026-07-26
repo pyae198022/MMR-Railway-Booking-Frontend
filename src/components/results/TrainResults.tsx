@@ -19,14 +19,19 @@ const CLASS_STYLE: Record<ClassType, { badge: string; tag: { mm: string; en: str
 }
 
 const TRAIN_IMAGES: Record<string, string> = {
-  'tr-001': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=320&q=75&auto=format',
-  'tr-002': 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=320&q=75&auto=format',
-  'tr-003': 'https://images.unsplash.com/photo-1553697388-94e804e2f0f6?w=320&q=75&auto=format',
-  'tr-004': 'https://images.unsplash.com/photo-1519003722824-194d4455a60c?w=320&q=75&auto=format',
-  'tr-005': 'https://images.unsplash.com/photo-1581350028946-e3e06a6e04f5?w=320&q=75&auto=format',
-  'tr-006': 'https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=320&q=75&auto=format',
-  'tr-007': 'https://images.unsplash.com/photo-1605130284535-11dd9eedc58a?w=320&q=75&auto=format',
-  'tr-008': 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=320&q=75&auto=format',
+  // Myanmar Railway Train Images
+  'tr-001': 'https://ortp.railways.gov.mm/images/trains/yangon-mandalay-express.jpg', // Upcountry Express
+  'tr-002': 'https://ortp.railways.gov.mm/images/trains/golden-route-night-train.jpg', // Golden Route (Night Train)
+  'tr-003': 'https://ortp.railways.gov.mm/images/trains/capital-link-naypyitaw.jpg', // Capital Link
+  'tr-004': 'https://ortp.railways.gov.mm/images/trains/heritage-express-bagan.jpg', // Heritage Express
+  'tr-005': 'https://ortp.railways.gov.mm/images/trains/southern-star-coastal.jpg', // Southern Star
+  'tr-006': 'https://ortp.railways.gov.mm/images/trains/naypyitaw-mandalay-express.jpg', // Naypyitaw-Mandalay Express
+  'tr-007': 'https://ortp.railways.gov.mm/images/trains/pyin-oolwin-scenic.jpg', // Yangon-Pyin Oo Lwin Scenic
+  'tr-008': 'https://ortp.railways.gov.mm/images/trains/bago-pyay-local.jpg', // Bago-Pyay Local
+  
+  // Fallback images (in case Myanmar Railways images are not accessible)
+  'tr-fallback-1': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=320&q=75&auto=format',
+  'tr-fallback-2': 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=320&q=75&auto=format',
 }
 
 function TrainCard({ train, departureDate }: { train: Train; departureDate: string }) {
@@ -38,7 +43,7 @@ function TrainCard({ train, departureDate }: { train: Train; departureDate: stri
   const from = getStationById(train.fromStationId)
   const to   = getStationById(train.toStationId)
   const intermediateStops = train.stops.slice(1, -1)
-  const imgSrc = TRAIN_IMAGES[train.id] ?? TRAIN_IMAGES['tr-001']
+  const imgSrc = TRAIN_IMAGES[train.id] ?? TRAIN_IMAGES['tr-fallback-1']
 
   const [y, m, d] = departureDate.split('-')
   const formattedDate = `${d}-${m}-${y}`

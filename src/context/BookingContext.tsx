@@ -30,6 +30,7 @@ import {
 } from '../utils/bookingStorage'
 import { localDateISO } from '../utils/date'
 import { clearUserProfile, loadUserProfile, saveUserProfile } from '../utils/userStorage'
+import type { TrainSearchRequest } from '../services/api'
 
 interface BookingContextValue {
   appView: AppView
@@ -71,8 +72,8 @@ interface BookingContextValue {
 const BookingContext = createContext<BookingContextValue | null>(null)
 
 const defaultSearch: SearchQuery = {
-  fromStationId: 'ygn',
-  toStationId: 'mdy',
+  fromStationId: '1', // Yangon (YGN) - numeric ID from backend
+  toStationId: '6',   // Mandalay (MDY) - numeric ID from backend
   departureDate: localDateISO(),
   passengerCount: 1,
   tripType: 'one-way',

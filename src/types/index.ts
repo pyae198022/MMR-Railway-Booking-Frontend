@@ -22,9 +22,13 @@ export type SeatStatus = 'available' | 'selected' | 'booked'
 export type TicketStatus = 'active' | 'past'
 
 export interface Station {
-  id: string
+  id: number
+  code: string
   name: string
-  nameMm: string
+  city: string
+  state: string
+  platformCount?: string
+  facilities?: string
 }
 
 export interface TrainClass {
@@ -35,14 +39,14 @@ export interface TrainClass {
 }
 
 export interface TrainStop {
-  stationId: string
+  stationId: number
   arrivalTime: string | null   // null for the first station
   departureTime: string | null // null for the last station
   stopDuration?: string        // e.g. "5 min"
 }
 
 export interface Train {
-  id: string
+  id: string | number
   name: string
   number: string
   fromStationId: string
@@ -52,6 +56,18 @@ export interface Train {
   duration: string
   classes: TrainClass[]
   stops: TrainStop[]
+  // Backend API fields (optional)
+  trainNumber?: string
+  trainName?: string
+  sourceStation?: Station
+  destinationStation?: Station
+  totalSeats?: number
+  availableSeats?: number
+  basePrice?: number
+  trainType?: string
+  status?: string
+  travelDuration?: number
+  calculatedPrice?: number
 }
 
 export interface Seat {
@@ -70,6 +86,10 @@ export interface SearchQuery {
   returnDate?: string
   passengerCount: number
   tripType: TripType
+  sourceCity?: string
+  destinationCity?: string
+  journeyDate?: string
+  numberOfPassengers?: number
 }
 
 export interface Passenger {
