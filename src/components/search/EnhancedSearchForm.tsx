@@ -20,10 +20,11 @@ interface EnhancedSearchFormProps {
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=2400&q=80'
 
+
 export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) {
   const { openTicketByReference, setSearchQuery, searchErrorMsg, searchLoading } = useBooking()
   const { t, lang } = useLanguage()
-  const { stations: allStations, loading: stationsLoading, error: stationsError } = useStations()
+  const { stations: allStations, loading: stationsLoading } = useStations()
 
   const [tripType, setTripType] = useState<TripType>(defaultSearch.tripType)
   const [from, setFrom] = useState(defaultSearch.fromStationId)
@@ -35,7 +36,7 @@ export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) 
   const [swapSpin, setSwapSpin] = useState(false)
   const [bookingReference, setBookingReference] = useState('')
   const [ticketError, setTicketError] = useState('')
-  const [showInfo, setShowInfo] = useState(false)
+
 
   const maxDate = new Date()
   maxDate.setDate(maxDate.getDate() + 60)
@@ -181,7 +182,8 @@ export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) 
       : `${n} ${n === 1 ? 'passenger' : 'passengers'}`
 
   return (
-    <section className="relative flex min-h-screen flex-col justify-center overflow-hidden pt-16">
+    <section className="relative flex min-h-screen flex-col overflow-y-auto pt-16">
+      {/* Background image */}
       <div
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url('${HERO_IMAGE}')` }}
@@ -205,14 +207,7 @@ export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) 
             {t('search_subtitle')}
           </p>
           
-          {/* Backend status */}
-          {stationsError && (
-            <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-amber-500/20 px-3 py-1.5">
-              <span className="text-xs font-medium text-amber-200">
-                {lang === 'mm' ? 'ဘက်အန်းမရရှိပါ - အချက်အလက်များကို အသုံးပြုနေပါသည်' : 'Backend unavailable - Using local data'}
-              </span>
-            </div>
-          )}
+          {/* Backend status — intentionally hidden from UI */}
         </div>
 
         <div className="search-card-float rounded-2xl border border-white/20 bg-white/95 p-6 shadow-2xl shadow-slate-900/25 backdrop-blur-xl sm:p-8">
@@ -429,36 +424,12 @@ export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) 
           </form>
         </div>
 
-        {/* Myanmar Railways Info Toggle */}
-        <div className="mt-6 text-center">
-          <button
-            type="button"
-            onClick={() => setShowInfo(!showInfo)}
-            className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/20"
-          >
-            <span>{showInfo 
-              ? (lang === 'mm' ? 'မြန်မာ့မီးရထား အချက်အလက်များ ပိတ်ရန်' : 'Hide Myanmar Railways Info') 
-              : (lang === 'mm' ? 'မြန်မာ့မီးရထား အချက်အလက်များ ကြည့်ရန်' : 'Show Myanmar Railways Info')}
-            </span>
-            <svg 
-              className={`w-4 h-4 transition-transform ${showInfo ? 'rotate-180' : ''}`} 
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
-
-        {/* Myanmar Railways Information */}
-        {showInfo && (
-          <div className="mt-6 rounded-2xl border border-white/20 bg-white/90 p-6 backdrop-blur-xl">
-            <MyanmarRailwayInfo lang={lang} />
-          </div>
-        )}
-
         <p className="mt-6 text-center text-xs text-slate-400/90">{t('search_footer')}</p>
+      </div>
+
+      {/* Myanmar Railways Info — always visible, full-width below search */}
+      <div className="relative mx-auto max-w-3xl w-full px-4 pb-20 sm:px-6">
+        <MyanmarRailwayInfo lang={lang} />
       </div>
     </section>
   )

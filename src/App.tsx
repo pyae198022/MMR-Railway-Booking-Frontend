@@ -9,7 +9,6 @@ import { TrainResults } from './components/results/TrainResults'
 import { EnhancedSearchForm } from './components/search/EnhancedSearchForm'
 import { SeatGrid } from './components/seats/SeatGrid'
 import { VerificationForm } from './components/verification/VerificationForm'
-import { BackendStatus } from './components/backend/BackendStatus'
 
 function AppContent() {
   const { appView, step } = useBooking()
@@ -42,10 +41,10 @@ function App() {
     <BookingProvider>
       <Layout>
         <AppContent />
-        <BackendStatus />
       </Layout>
     </BookingProvider>
   )
 }
 
 export default App
+

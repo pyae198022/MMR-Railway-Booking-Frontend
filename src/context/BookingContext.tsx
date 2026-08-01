@@ -77,7 +77,7 @@ const BookingContext = createContext<BookingContextValue | null>(null)
 const defaultSearch: SearchQuery = {
   fromStationId: '1', // Yangon (YGN) - numeric ID from backend
   toStationId: '6',   // Mandalay (MDY) - numeric ID from backend
-  departureDate: localDateISO(1), // Default to tomorrow to match backend train schedules
+  departureDate: localDateISO(0), // Default to today
   passengerCount: 1,
   tripType: 'one-way',
 }
