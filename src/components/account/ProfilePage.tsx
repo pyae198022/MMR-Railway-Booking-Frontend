@@ -1,6 +1,6 @@
-import { formatPrice, getStationById } from '../../data/mockData'
-import { useBooking } from '../../context/BookingContext'
+import { useBooking } from "../../context/BookingContext"
 import { useLanguage } from '../../context/LanguageContext'
+import { formatPrice, getStationById } from '../../utils'
 import { Button } from '../ui/Button'
 import { Card } from '../ui/Card'
 import { PageHeader } from '../ui/PageHeader'

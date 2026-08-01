@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
 import { useLanguage } from '../../context/LanguageContext'
+import { getStationById } from '../../utils'
 import { formatNrcHint, validateNrc } from '../../utils/nrc'
 import { ArrowRightIcon, ShieldCheckIcon } from '../icons'
 import { Button } from '../ui/Button'

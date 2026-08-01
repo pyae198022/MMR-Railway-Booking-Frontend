@@ -1,6 +1,6 @@
 import { useLanguage } from '../../context/LanguageContext'
-import { formatPrice, getStationById } from '../../data/mockData'
 import { useBooking } from '../../context/BookingContext'
+import { formatPrice, getStationById } from '../../utils'
 import type { Seat } from '../../types'
 import { ArrowRightIcon, ArmchairIcon } from '../icons'
 import { PageHeader } from '../ui/PageHeader'
@@ -32,16 +32,18 @@ function SeatButton({ seat, onToggle }: { seat: Seat; onToggle: (id: string) => 
   const isSelected = seat.status === 'selected'
   const isBooked   = seat.status === 'booked'
   const ariaDesc = isBooked ? t('seats_occupied') : isSelected ? t('seats_selected') : t('seats_available')
+  // Extract just the seat number (row + column) for display
+  const seatDisplay = `${seat.row}${seat.column}`
   return (
     <button
       type="button"
       disabled={isBooked}
       onClick={() => onToggle(seat.id)}
-      aria-label={`${t('seats_selected_label')} ${seat.id}, ${ariaDesc}`}
+      aria-label={`${t('seats_selected_label')} ${seatDisplay}, ${ariaDesc}`}
       aria-pressed={isSelected}
       className={`seat-btn ${isBooked ? 'seat-btn-booked' : isSelected ? 'seat-btn-selected' : 'seat-btn-available'}`}
     >
-      <span className={isBooked ? 'line-through decoration-slate-400' : ''}>{seat.id}</span>
+      <span className={isBooked ? 'line-through decoration-slate-400' : ''}>{seatDisplay}</span>
     </button>
   )
 }

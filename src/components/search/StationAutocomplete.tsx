@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, useState } from 'react'
-import { stations } from '../../data/mockData'
+import { useStations } from '../../hooks/useApi'
 import type { Station } from '../../types'
 import { MapPinIcon } from '../icons'
 
@@ -11,15 +11,16 @@ interface StationAutocompleteProps {
   placeholder?: string
 }
 
-function filterStations(query: string, excludeId?: string): Station[] {
+function filterStations(stations: Station[], query: string, excludeId?: string): Station[] {
   const q = query.trim().toLowerCase()
   return stations.filter((s) => {
     if (excludeId && s.id === excludeId) return false
     if (!q) return true
     return (
       s.name.toLowerCase().includes(q) ||
-      s.nameMm.includes(q) ||
-      s.id.toLowerCase().includes(q)
+      (s.nameMm && s.nameMm.includes(q)) ||
+      s.id.toLowerCase().includes(q) ||
+      (s.code && s.code.toLowerCase().includes(q))
     )
   })
 }
@@ -31,34 +32,37 @@ export function StationAutocomplete({
   excludeId,
   placeholder = 'Search station…',
 }: StationAutocompleteProps) {
+  const { stations: allStations, loading, error } = useStations()
   const listId = useId()
   const containerRef = useRef<HTMLDivElement>(null)
-  const selected = stations.find((s) => s.id === value)
+  
+  // Find selected station
+  const selected = allStations.find((s) => String(s.id) === String(value))
   const [query, setQuery] = useState(selected?.name ?? '')
   const [open, setOpen] = useState(false)
   const [highlight, setHighlight] = useState(0)
 
-  const results = filterStations(query, excludeId)
+  const results = filterStations(allStations, query, excludeId)
 
   useEffect(() => {
-    const station = stations.find((s) => s.id === value)
+    const station = allStations.find((s) => String(s.id) === String(value))
     if (station && !open) setQuery(station.name)
-  }, [value, open])
+  }, [value, open, allStations])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false)
-        const station = stations.find((s) => s.id === value)
+        const station = allStations.find((s) => String(s.id) === String(value))
         setQuery(station?.name ?? '')
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [value])
+  }, [value, allStations])
 
   const pick = (station: Station) => {
-    onChange(station.id)
+    onChange(String(station.id))
     setQuery(station.name)
     setOpen(false)
   }
@@ -81,6 +85,8 @@ export function StationAutocomplete({
       pick(results[highlight])
     } else if (e.key === 'Escape') {
       setOpen(false)
+      const station = allStations.find((s) => String(s.id) === String(value))
+      setQuery(station?.name ?? '')
     }
   }
 

@@ -7,7 +7,8 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { generateCoachSeats, searchTrains } from '../data/mockData'
+import { apiService } from '../services/api'
+import { useTrainSearch } from '../hooks/useApi'
 import type {
   AppView,
   BookingStep,
@@ -21,6 +22,7 @@ import type {
   UserProfile,
   VerifiedUser,
 } from '../types'
+import type { TrainSearchRequest, TrainSearchResponse } from '../services/api'
 import {
   RESERVATION_DURATION_MS,
   addTicketToHistory,
@@ -30,7 +32,6 @@ import {
 } from '../utils/bookingStorage'
 import { localDateISO } from '../utils/date'
 import { clearUserProfile, loadUserProfile, saveUserProfile } from '../utils/userStorage'
-import type { TrainSearchRequest } from '../services/api'
 
 interface BookingContextValue {
   appView: AppView
@@ -51,6 +52,8 @@ interface BookingContextValue {
   reservationExpiresAt: number | null
   reservationSecondsLeft: number
   reservationExpired: boolean
+  searchErrorMsg: string | null
+  searchLoading: boolean
   setAppView: (view: AppView) => void
   setSearchQuery: (query: SearchQuery) => void
   selectTrain: (train: Train, classType: ClassType) => void
@@ -74,7 +77,7 @@ const BookingContext = createContext<BookingContextValue | null>(null)
 const defaultSearch: SearchQuery = {
   fromStationId: '1', // Yangon (YGN) - numeric ID from backend
   toStationId: '6',   // Mandalay (MDY) - numeric ID from backend
-  departureDate: localDateISO(),
+  departureDate: localDateISO(1), // Default to tomorrow to match backend train schedules
   passengerCount: 1,
   tripType: 'one-way',
 }
@@ -94,6 +97,63 @@ function generateTicketId(): string {
 
 function generateUserId(): string {
   return `usr-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+}
+
+// Convert backend train to frontend train format
+function convertBackendTrainToFrontend(backendTrain: any): Train {
+  // Backend train structure to frontend train structure conversion
+  return {
+    id: backendTrain.id || backendTrain.trainNumber,
+    name: backendTrain.trainName || backendTrain.trainNumber,
+    number: backendTrain.trainNumber,
+    fromStationId: backendTrain.sourceStation?.id || '1',
+    toStationId: backendTrain.destinationStation?.id || '6',
+    departureTime: backendTrain.departureTime,
+    arrivalTime: backendTrain.arrivalTime,
+    duration: backendTrain.travelDuration ? `${Math.floor(backendTrain.travelDuration / 60)}h ${backendTrain.travelDuration % 60}m` : 'Unknown',
+    classes: [
+      { type: 'first-1', label: 'First Class 1', price: backendTrain.basePrice * 2, availableSeats: 10 },
+      { type: 'first-2', label: 'First Class 2', price: backendTrain.basePrice * 1.5, availableSeats: 15 },
+      { type: 'upper-1', label: 'Upper Class 1', price: backendTrain.basePrice, availableSeats: 20 },
+      { type: 'upper-2', label: 'Upper Class 2', price: backendTrain.basePrice * 0.8, availableSeats: 25 },
+      { type: 'ordinary', label: 'Ordinary Class', price: backendTrain.basePrice * 0.5, availableSeats: 40 },
+    ],
+    stops: [],
+    // Backend fields
+    trainNumber: backendTrain.trainNumber,
+    trainName: backendTrain.trainName,
+    sourceStation: backendTrain.sourceStation,
+    destinationStation: backendTrain.destinationStation,
+    totalSeats: backendTrain.totalSeats,
+    availableSeats: backendTrain.availableSeats,
+    basePrice: backendTrain.basePrice,
+    trainType: backendTrain.trainType,
+    status: backendTrain.status,
+    travelDuration: backendTrain.travelDuration,
+    calculatedPrice: backendTrain.calculatedPrice,
+  }
+}
+
+// Generate mock seats for a train (to be replaced with real seat data from backend)
+function generateCoachSeats(trainId: string | number, classType: string): Seat[] {
+  const seats: Seat[] = []
+  const rows = 10
+  const columns = ['A', 'B', 'C', 'D']
+  
+  for (let row = 1; row <= rows; row++) {
+    for (const column of columns) {
+      const id = `${trainId}-${classType}-${row}${column}`
+      const isBooked = Math.random() > 0.7 // Random booking status
+      seats.push({
+        id,
+        row,
+        column,
+        status: isBooked ? 'booked' : 'available',
+      })
+    }
+  }
+  
+  return seats
 }
 
 export function BookingProvider({ children }: { children: ReactNode }) {
@@ -116,6 +176,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [reservationExpiresAt, setReservationExpiresAt] = useState<number | null>(null)
   const [reservationSecondsLeft, setReservationSecondsLeft] = useState(0)
+  const [searchErrorMsg, setSearchErrorMsg] = useState<string | null>(null)
+  
+  // API search state
+  const [apiSearchRequest, setApiSearchRequest] = useState<TrainSearchRequest | null>(null)
+  const { searchResults: apiSearchResults, loading: searchLoading, error: searchError } = useTrainSearch(apiSearchRequest)
 
   useEffect(() => {
     saveBookingHistory(bookingHistory)
@@ -136,15 +201,49 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   const reservationExpired = reservationSecondsLeft <= 0 && reservationExpiresAt !== null
 
+  // Convert API search results to frontend train format
+  useEffect(() => {
+    if (apiSearchResults && apiSearchResults.length > 0) {
+      const convertedTrains = apiSearchResults.map(result => 
+        convertBackendTrainToFrontend(result.train)
+      )
+      setSearchResults(convertedTrains)
+      setStep('results')
+      setSearchErrorMsg(null) // Clear any error if we found results
+    } else if (searchError) {
+      console.error('API search failed:', searchError)
+      setSearchErrorMsg('Search failed. Please try again.')
+    } else if (apiSearchResults && apiSearchResults.length === 0) {
+      // No trains found - stay on search page and clear any previous results
+      setSearchResults([])
+      setSearchErrorMsg('No trains found for your search. Please try different stations or dates.')
+      // Don't change step - stay on search page
+    }
+  }, [apiSearchResults, searchError])
+
   const setAppView = useCallback((view: AppView) => {
     setAppViewState(view)
   }, [])
 
   const setSearchQuery = useCallback((query: SearchQuery) => {
     setSearchQueryState(query)
-    const results = searchTrains(query.fromStationId, query.toStationId)
-    setSearchResults(results)
-    setStep('results')
+    setSearchErrorMsg(null) // Clear any previous search error
+    setStep('search') // Always go back to search page when initiating a new search
+    
+    // Prepare API search request
+    if (query.sourceCity && query.destinationCity && query.journeyDate) {
+      const apiRequest: TrainSearchRequest = {
+        sourceCity: query.sourceCity,
+        destinationCity: query.destinationCity,
+        journeyDate: query.journeyDate,
+        numberOfPassengers: query.numberOfPassengers || query.passengerCount
+      }
+      setApiSearchRequest(apiRequest)
+    } else {
+      // If required fields are missing, clear search results
+      setSearchResults([])
+      setStep('results')
+    }
   }, [])
 
   const selectTrain = useCallback((train: Train, classType: ClassType) => {
@@ -343,6 +442,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
     setIsProcessingPayment(false)
     setReservationExpiresAt(null)
     setReservationSecondsLeft(0)
+    setApiSearchRequest(null)
+    setSearchErrorMsg(null) // Clear search error
   }, [])
 
   const value = useMemo(
@@ -365,6 +466,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       reservationExpiresAt,
       reservationSecondsLeft,
       reservationExpired,
+      searchErrorMsg,
+      searchLoading,
       setAppView,
       setSearchQuery,
       selectTrain,
@@ -401,6 +504,8 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       reservationExpiresAt,
       reservationSecondsLeft,
       reservationExpired,
+      searchErrorMsg,
+      searchLoading,
       setAppView,
       setSearchQuery,
       selectTrain,

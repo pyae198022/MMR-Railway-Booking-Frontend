@@ -12,7 +12,7 @@ const HERO_IMAGE =
   'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=2400&q=80'
 
 export function EnhancedSearchForm() {
-  const { openTicketByReference, setSearchQuery } = useBooking()
+  const { openTicketByReference, setSearchQuery, searchErrorMsg, searchLoading } = useBooking()
   const { t, lang } = useLanguage()
   const { stations: allStations, loading: stationsLoading, error: stationsError } = useStations()
 
@@ -354,13 +354,19 @@ export function EnhancedSearchForm() {
               </p>
             )}
 
+            {searchErrorMsg && (
+              <p className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-700">
+                {searchErrorMsg}
+              </p>
+            )}
+
             <button
               type="submit"
               className="search-cta group flex w-full items-center justify-center gap-2 rounded-xl py-4 text-base font-semibold text-white"
-              disabled={stationsLoading}
+              disabled={stationsLoading || searchLoading}
             >
-              {stationsLoading 
-                ? (lang === 'mm' ? 'စစ်ဆေးနေသည်...' : 'Checking...')
+              {(stationsLoading || searchLoading)
+                ? (lang === 'mm' ? 'စစ်ဆေးနေသည်...' : 'Searching...')
                 : t('search_btn')
               }
               <ArrowRightIcon size={20} className="transition-transform duration-200 group-hover:translate-x-1" />

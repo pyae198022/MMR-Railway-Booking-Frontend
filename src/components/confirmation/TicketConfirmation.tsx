@@ -1,6 +1,6 @@
-import { formatPrice, getStationById } from '../../data/mockData'
-import { useBooking } from '../../context/BookingContext'
+import { useBooking } from "../../context/BookingContext"
 import { useLanguage } from '../../context/LanguageContext'
+import { formatPrice, getStationById } from '../../utils'
 import { parseLocalDate } from '../../utils/date'
 import { CheckCircleIcon } from '../icons'
 import { Button } from '../ui/Button'

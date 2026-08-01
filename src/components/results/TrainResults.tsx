@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { formatPrice, getStationById } from '../../data/mockData'
-import { useBooking } from '../../context/BookingContext'
+import { useBooking } from "../../context/BookingContext"
 import { useLanguage } from '../../context/LanguageContext'
+import { formatPrice, getStationById } from '../../utils'
 import type { ClassType, Train } from '../../types'
 import { parseLocalDate } from '../../utils/date'
 import { ClockIcon, MapPinIcon } from '../icons'
@@ -18,32 +18,16 @@ const CLASS_STYLE: Record<ClassType, { badge: string; tag: { mm: string; en: str
   'ordinary': { badge: 'bg-slate-100 text-slate-600',     tag: { mm: 'သာမန်ထိုင်ခုံ',     en: 'Bench'           }, desc: { mm: 'ပုံသေထိုင်ခုံ · မသတ်မှတ်', en: 'Bench seats · No assignment'} },
 }
 
-const TRAIN_IMAGES: Record<string, string> = {
-  // Myanmar Railway Train Images
-  'tr-001': 'https://ortp.railways.gov.mm/images/trains/yangon-mandalay-express.jpg', // Upcountry Express
-  'tr-002': 'https://ortp.railways.gov.mm/images/trains/golden-route-night-train.jpg', // Golden Route (Night Train)
-  'tr-003': 'https://ortp.railways.gov.mm/images/trains/capital-link-naypyitaw.jpg', // Capital Link
-  'tr-004': 'https://ortp.railways.gov.mm/images/trains/heritage-express-bagan.jpg', // Heritage Express
-  'tr-005': 'https://ortp.railways.gov.mm/images/trains/southern-star-coastal.jpg', // Southern Star
-  'tr-006': 'https://ortp.railways.gov.mm/images/trains/naypyitaw-mandalay-express.jpg', // Naypyitaw-Mandalay Express
-  'tr-007': 'https://ortp.railways.gov.mm/images/trains/pyin-oolwin-scenic.jpg', // Yangon-Pyin Oo Lwin Scenic
-  'tr-008': 'https://ortp.railways.gov.mm/images/trains/bago-pyay-local.jpg', // Bago-Pyay Local
-  
-  // Fallback images (in case Myanmar Railways images are not accessible)
-  'tr-fallback-1': 'https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=320&q=75&auto=format',
-  'tr-fallback-2': 'https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=320&q=75&auto=format',
-}
+
 
 function TrainCard({ train, departureDate }: { train: Train; departureDate: string }) {
   const { selectTrain } = useBooking()
   const { t, lang } = useLanguage()
   const [showClasses, setShowClasses] = useState(false)
-  const [showStops, setShowStops] = useState(false)
 
   const from = getStationById(train.fromStationId)
   const to   = getStationById(train.toStationId)
   const intermediateStops = train.stops.slice(1, -1)
-  const imgSrc = TRAIN_IMAGES[train.id] ?? TRAIN_IMAGES['tr-fallback-1']
 
   const [y, m, d] = departureDate.split('-')
   const formattedDate = `${d}-${m}-${y}`
@@ -87,28 +71,25 @@ function TrainCard({ train, departureDate }: { train: Train; departureDate: stri
             {stopCount > 0 && (
               <>
                 <span className="text-slate-300">·</span>
-                <button
-                  type="button"
-                  onClick={() => setShowStops(!showStops)}
-                  className="inline-flex items-center gap-0.5 text-emerald-600 hover:underline"
-                >
+                <span className="inline-flex items-center gap-0.5 text-emerald-600">
                   <MapPinIcon size={11} />
                   {stopLabel}
-                  <svg width="9" height="9" viewBox="0 0 10 10" className={`transition-transform ${showStops ? 'rotate-180' : ''}`}>
-                    <path d="M2.5 3.75L5 6.25L7.5 3.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-                  </svg>
-                </button>
+                </span>
               </>
             )}
           </div>
 
-          {showStops && stopCount > 0 && (
-            <div className="stops-expand flex flex-wrap gap-x-3 gap-y-0.5 rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+          {stopCount > 0 && (
+            <div className="stops-expand mt-2 flex flex-wrap gap-x-3 gap-y-0.5 rounded-lg bg-slate-50 px-3 py-2 text-[11px] text-slate-500">
+              <div className="flex w-full items-center gap-1.5 mb-1">
+                <MapPinIcon size={10} />
+                <span className="font-medium">Intermediate Stations:</span>
+              </div>
               {intermediateStops.map((s) => {
                 const st = getStationById(s.stationId)
                 return (
                   <span key={s.stationId} className="inline-flex items-center gap-1">
-                    <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                    <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
                     {lang === 'mm' ? (st?.nameMm ?? st?.name) : st?.name}
                     {s.arrivalTime && (
                       <span className="tabular-nums text-slate-400">
@@ -129,16 +110,52 @@ function TrainCard({ train, departureDate }: { train: Train; departureDate: stri
           </p>
         </div>
 
-        {/* Right: image + price + button */}
+        {/* Right: price + stops info + button */}
         <div className="flex w-52 shrink-0 flex-col items-stretch overflow-hidden border-l border-slate-100">
-          <div className="relative h-[72px] overflow-hidden bg-slate-100">
-            <img src={imgSrc} alt={train.name} className="h-full w-full object-cover" loading="lazy" />
-          </div>
           <div className="flex flex-1 flex-col items-center justify-center gap-2 px-3 py-2">
             <div className="text-center">
               <p className="text-xs text-slate-400">{t('results_from_price')}</p>
               <p className="text-base font-bold tabular-nums text-slate-900">{formatPrice(cheapestPrice)}</p>
             </div>
+            
+            {/* Stop stations information */}
+            {stopCount > 0 ? (
+              <div className="w-full">
+                <div className="mb-1 flex items-center justify-center gap-1 text-xs text-slate-600">
+                  <MapPinIcon size={11} />
+                  <span className="font-medium">{stopLabel}</span>
+                </div>
+                <div className="max-h-24 overflow-y-auto rounded border border-slate-200 bg-slate-50 p-1.5">
+                  <div className="space-y-1">
+                    {intermediateStops.slice(0, 3).map((s) => {
+                      const st = getStationById(s.stationId)
+                      return (
+                        <div key={s.stationId} className="flex items-center gap-1.5 text-[10px] text-slate-600">
+                          <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                          <span className="truncate">{lang === 'mm' ? (st?.nameMm ?? st?.name) : st?.name}</span>
+                          {s.arrivalTime && (
+                            <span className="ml-auto shrink-0 tabular-nums text-slate-400 text-[9px]">
+                              {s.arrivalTime}
+                            </span>
+                          )}
+                        </div>
+                      )
+                    })}
+                    {intermediateStops.length > 3 && (
+                      <div className="text-center text-[9px] text-slate-500">
+                        +{intermediateStops.length - 3} more stops
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-xs text-slate-500">
+                <MapPinIcon size={12} className="mx-auto mb-1" />
+                <span>Direct route</span>
+              </div>
+            )}
+            
             <button
               type="button"
               onClick={() => setShowClasses(!showClasses)}
@@ -177,8 +194,46 @@ function TrainCard({ train, departureDate }: { train: Train; departureDate: stri
                     {t('results_choose_seats')}
                   </button>
                 </div>
-                <div className="w-24 shrink-0 overflow-hidden bg-slate-100">
-                  <img src={imgSrc} alt={cls.label} className="h-full w-full object-cover" loading="lazy" />
+                {/* Stop stations info for this class */}
+                <div className="w-32 shrink-0 overflow-hidden border-l border-slate-100 px-2 py-3">
+                  <div className="h-full overflow-y-auto">
+                    <div className="mb-1 flex items-center gap-1 text-[10px] font-medium text-slate-600">
+                      <MapPinIcon size={9} />
+                      <span>Route Stops</span>
+                    </div>
+                    <div className="space-y-0.5">
+                      {/* Starting station */}
+                      <div className="flex items-center gap-1 text-[9px] text-slate-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                        <span className="truncate">{lang === 'mm' ? (from?.nameMm ?? from?.name) : from?.name}</span>
+                        <span className="ml-auto tabular-nums text-slate-400">{train.departureTime}</span>
+                      </div>
+                      {/* Intermediate stops (show first 2) */}
+                      {intermediateStops.slice(0, 2).map((s) => {
+                        const st = getStationById(s.stationId)
+                        return (
+                          <div key={s.stationId} className="flex items-center gap-1 text-[9px] text-slate-600">
+                            <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                            <span className="truncate">{lang === 'mm' ? (st?.nameMm ?? st?.name) : st?.name}</span>
+                            {s.arrivalTime && (
+                              <span className="ml-auto tabular-nums text-slate-400">{s.arrivalTime}</span>
+                            )}
+                          </div>
+                        )
+                      })}
+                      {/* Destination station */}
+                      <div className="flex items-center gap-1 text-[9px] text-slate-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                        <span className="truncate">{lang === 'mm' ? (to?.nameMm ?? to?.name) : to?.name}</span>
+                        <span className="ml-auto tabular-nums text-slate-400">{train.arrivalTime}</span>
+                      </div>
+                      {intermediateStops.length > 2 && (
+                        <div className="text-center text-[8px] text-slate-500 pt-0.5">
+                          +{intermediateStops.length - 2} intermediate stops
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex w-28 shrink-0 flex-col items-center justify-center gap-1.5 border-l border-slate-100 px-2 py-3">
                   <div className="text-center">

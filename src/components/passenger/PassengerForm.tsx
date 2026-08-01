@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { getStationById } from '../../data/mockData'
-import { useBooking } from '../../context/BookingContext'
+import { useBooking } from "../../context/BookingContext"
 import { useLanguage } from '../../context/LanguageContext'
+import { getStationById } from '../../utils'
 import type { Passenger } from '../../types'
 import { formatNrcHint, validateNrc } from '../../utils/nrc'
 import { ArrowRightIcon } from '../icons'

@@ -1,7 +1,7 @@
 import { useState } from 'react'
-import { formatPrice, getStationById } from '../../data/mockData'
-import { useBooking } from '../../context/BookingContext'
+import { useBooking } from "../../context/BookingContext"
 import { useLanguage } from '../../context/LanguageContext'
+import { formatPrice, getStationById } from '../../utils'
 import type { PaymentMethod } from '../../types'
 import { CreditCardIcon, LoaderIcon, QrCodeIcon, ShieldCheckIcon } from '../icons'
 import { MockQRCode } from '../confirmation/MockQRCode'

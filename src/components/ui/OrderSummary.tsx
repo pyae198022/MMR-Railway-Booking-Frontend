@@ -1,5 +1,5 @@
 import { useLanguage } from '../../context/LanguageContext'
-import { formatPrice } from '../../data/mockData'
+import { formatPrice } from '../../utils'
 
 interface OrderSummaryProps {
   route: string
