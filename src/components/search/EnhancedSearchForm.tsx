@@ -8,10 +8,19 @@ import { ArrowRightIcon, CalendarIcon, SwapIcon, UsersIcon } from '../icons'
 import { SearchDateInput, SearchField, SearchSelect } from './SearchField'
 import { MyanmarRailwayInfo } from '../mmr/MyanmarRailwayInfo'
 
+interface EnhancedSearchFormProps {
+  onSearchSubmit?: (params: {
+    sourceCity: string;
+    destinationCity: string;
+    journeyDate: string;
+    numberOfPassengers: number;
+  }) => void;
+}
+
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1474487548417-781cb71495f3?auto=format&fit=crop&w=2400&q=80'
 
-export function EnhancedSearchForm() {
+export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) {
   const { openTicketByReference, setSearchQuery, searchErrorMsg, searchLoading } = useBooking()
   const { t, lang } = useLanguage()
   const { stations: allStations, loading: stationsLoading, error: stationsError } = useStations()
@@ -129,6 +138,16 @@ export function EnhancedSearchForm() {
     }
     
     setSearchQuery(searchData)
+    
+    // Call onSearchSubmit if provided
+    if (onSearchSubmit) {
+      onSearchSubmit({
+        sourceCity: fromStation.city,
+        destinationCity: toStation.city,
+        journeyDate: `${date}T00:00:00`,
+        numberOfPassengers: passengers
+      })
+    }
   }
 
   const handleTicketLookup = (e: React.FormEvent) => {

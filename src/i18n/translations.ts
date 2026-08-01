@@ -158,7 +158,7 @@ const dict = {
   profile_nrc:            { mm: 'မှတ်ပုံတင်',                     en: 'NRC' },
   profile_not_added:      { mm: 'မထည့်ရသေး',                     en: 'Not added' },
   profile_saved_tickets:  { mm: 'သိမ်းဆည်းထားသော လက်မှတ်များ',    en: 'Saved tickets' },
-  profile_tickets_note:   { mm: 'ဤဘရောင်ဇာတွင် ဝယ်ယူထားသော လက်မှတ်များ ဤနေရာတွင် ပြသသည်', en: 'Tickets booked in this browser are shown here.' },
+  profile_tickets_note:   { mm: 'ဝယ်ယူထားသော လက်မှတ်များ ဤနေရာတွင် ပြသသည်', en: 'Tickets booked in this browser are shown here.' },
   profile_ticket:         { mm: 'လက်မှတ်',                       en: 'ticket' },
   profile_tickets:        { mm: 'လက်မှတ်များ',                   en: 'tickets' },
   profile_no_tickets:     { mm: 'လက်မှတ်မရှိသေး',               en: 'No saved tickets yet' },
