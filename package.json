@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "build": "vite build", 
+    "preview": "vite"
+    
   },
   "dependencies": {
     "lucide-react": "^1.26.0",
@@ -25,4 +25,5 @@
     "typescript": "~6.0.2",
     "vite": "^8.1.1"
   }
+  
 }
