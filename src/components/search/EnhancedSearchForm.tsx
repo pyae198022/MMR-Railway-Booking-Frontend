@@ -300,7 +300,7 @@ export function EnhancedSearchForm({ onSearchSubmit }: EnhancedSearchFormProps) 
                 >
                   <option value="">
                     {stationsLoading 
-                      ? (lang === 'mm' ? 'ဘူတာများ လာရောက်နေသည်...' : 'Loading stations...')
+                      ? (lang === 'mm' ? 'ဘူတာများ Loading ဖြစ်နေပါသည်...' : 'Loading stations...')
                       : (lang === 'mm' ? 'ရောက်ရှိမည့် ဘူတာ ရွေးပါ' : 'Select arrival station')
                     }
                   </option>
