@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { EnhancedSearchForm } from '../components/search/EnhancedSearchForm';
 import { TrainSearchWithStops } from '../components/search/TrainSearchWithStops';
 import { MyanmarRailwayInfo } from '../components/mmr/MyanmarRailwayInfo';
-import { TrainIcon, SearchIcon, MapPinIcon } from '../icons/AdditionalIcons';
+import { MapPinIcon, SearchIcon, TrainIcon } from 'lucide-react';
+
 
 export function TrainSearchPage() {
   const [searchState, setSearchState] = useState<'form' | 'results'>('form');
