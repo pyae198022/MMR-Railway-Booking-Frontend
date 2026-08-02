@@ -42,6 +42,8 @@ const dict = {
   results_results:        { mm: 'ရလဒ်',                           en: 'result' },
   results_no_trains:      { mm: 'ဤလမ်းကြောင်းတွင် ရထားမရှိပါ', en: 'No trains on this route' },
   results_try_other:      { mm: 'အခြားဘူတာတစ်ခု ကြိုးစားပါ',    en: 'Try different stations' },
+  search_no_trains_found: { mm: 'သင့်ရှာဖွေမှုအတွက် ရထားမတွေ့ပါ။ ကျေးဇူးပြု၍ အခြားဘူတာများ သို့မဟုတ် ရက်စွဲများကို ကြိုးစားကြည့်ပါ။', en: 'No trains found for your search. Please try different stations or dates.' },
+  search_failed:          { mm: 'ရှာဖွေမှု မအောင်မြင်ပါ။ ကျေးဇူးပြု၍ ထပ်မံကြိုးစားကြည့်ပါ။', en: 'Search failed. Please try again.' },
   results_new_search:     { mm: 'ရှာဖွေမှုအသစ်',                 en: 'New search' },
   results_from_price:     { mm: 'ခရီးသည်တစ်ဦးစာ',               en: 'Per passenger from' },
   results_select_class:   { mm: 'ထိုင်ခုံအမျိုးအစားရွေးချယ်ရန်',              en: 'Select class' },

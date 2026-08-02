@@ -9,6 +9,8 @@ import {
 } from 'react'
 import { apiService } from '../services/api'
 import { useTrainSearch } from '../hooks/useApi'
+import { useLanguage } from './LanguageContext'
+import { t, type TranslationKey } from '../i18n/translations'
 import type {
   AppView,
   BookingStep,
@@ -178,6 +180,9 @@ export function BookingProvider({ children }: { children: ReactNode }) {
   const [reservationSecondsLeft, setReservationSecondsLeft] = useState(0)
   const [searchErrorMsg, setSearchErrorMsg] = useState<string | null>(null)
   
+  // Get current language for translations
+  const { lang } = useLanguage()
+  
   // API search state
   const [apiSearchRequest, setApiSearchRequest] = useState<TrainSearchRequest | null>(null)
   const { searchResults: apiSearchResults, loading: searchLoading, error: searchError } = useTrainSearch(apiSearchRequest)
@@ -203,6 +208,11 @@ export function BookingProvider({ children }: { children: ReactNode }) {
 
   // Convert API search results to frontend train format
   useEffect(() => {
+    // Only process results if a search was actually performed (apiSearchRequest is not null)
+    if (!apiSearchRequest) {
+      return; // No search performed yet
+    }
+    
     if (apiSearchResults && apiSearchResults.length > 0) {
       const convertedTrains = apiSearchResults.map(result => 
         convertBackendTrainToFrontend(result.train)
@@ -212,14 +222,14 @@ export function BookingProvider({ children }: { children: ReactNode }) {
       setSearchErrorMsg(null) // Clear any error if we found results
     } else if (searchError) {
       console.error('API search failed:', searchError)
-      setSearchErrorMsg('Search failed. Please try again.')
+      setSearchErrorMsg(t('search_failed', lang))
     } else if (apiSearchResults && apiSearchResults.length === 0) {
       // No trains found - stay on search page and clear any previous results
       setSearchResults([])
-      setSearchErrorMsg('No trains found for your search. Please try different stations or dates.')
+      setSearchErrorMsg(t('search_no_trains_found', lang))
       // Don't change step - stay on search page
     }
-  }, [apiSearchResults, searchError])
+  }, [apiSearchResults, searchError, apiSearchRequest, lang])
 
   const setAppView = useCallback((view: AppView) => {
     setAppViewState(view)
