@@ -75,6 +75,13 @@ export interface Seat {
   row: number
   column: string
   status: SeatStatus
+  seatNumber: string
+  seatType?: 'window' | 'aisle' | 'middle' | 'berth' | 'bench'
+  coachType?: ClassType
+  coachNumber?: string
+  price?: number
+  features?: string[] // e.g., ['power-outlet', 'extra-legroom', 'near-restroom']
+  accessibility?: boolean
 }
 
 export type TripType = 'one-way' | 'round-trip'
